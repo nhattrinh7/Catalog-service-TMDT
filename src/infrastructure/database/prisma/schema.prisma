@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma tự động đọc file .env dù cho chưa cài .dotenv, nhưng chỉ đọc được giá trị 
+// trong env khi prisma đã start lên, những chỗ chưa start thì chịu
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") 
+}
+
+model Brand {
+  id          String    @id @db.Uuid
+  name        String    
+  description String    @db.Text
+  logo        String
+  country     String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("brands")
+}
+
+model Category {
+  id          String     @id @db.Uuid
+  name        String
+  description String     @db.Text
+  parentId    String?    @map("parent_id") @db.Uuid
+  attributes  Json?      // Lưu danh sách các thuộc tính của ngành hàng. ngành hàng cấp thấp nhất mới có
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+
+  @@map("categories")
+}
+
+enum ApproveProductStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Product {
+  id                String                @id @db.Uuid
+  name              String
+  descriptions       String               @db.Text
+  attributes        Json                 
+  shopId            String                @map("shop_id") @db.Uuid
+  categoryId        String                @map("category_id") @db.Uuid
+  mainImage         String                @map("main_image") @db.Text
+  galleryImage      Json                  @map("gallery_image")
+  video             String?               @db.Text
+  ratingAvg         Float                 @map("rating_avg")
+  ratingCount       Int                   @map("rating_count")
+  unit              String                @db.VarChar(30)
+  isActive          Boolean               @map("is_active") @default(true) // trường này chỉ mang ý nghĩa có show ra cho người dùng ko
+  approveStatus     ApproveProductStatus  @default(PENDING) @map("approve_status")
+  rejectReason      String?               @map("reject_reason") @db.Text
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+  
+  category          Category              @relation(fields: [categoryId], references: [id])
+  variants          ProductVariant[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id          String   @id @db.Uuid
+  productId   String   @map("product_id") @db.Uuid
+  sku         String   
+  price       Int
+  image       String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@map("product_variants")
+}
