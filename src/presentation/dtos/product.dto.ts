@@ -35,13 +35,21 @@ export const CreateProductSchema = ProductSchema.pick({
   unit: true,
 })
 export class CreateProductEntityDto extends createZodDto(CreateProductSchema) {}
+// Schema cho classification (option và values của nó)
+export const ClassificationSchema = z.object({
+  name: z.string().min(1).max(30),
+  values: z.array(z.string().min(1).max(30)).min(1),
+})
+
 export const CreateProductBodySchema = CreateProductSchema.extend({
+  classifications: z.array(ClassificationSchema).optional(),
   variants: z.array(
     z.object({
       image: z.url(),
       price: z.number().min(0),
       sku: z.string().max(100),
       stock: z.number().min(0),
+      optionValues: z.array(z.string().max(30)).optional(),
     })
   )
 })
@@ -102,9 +110,6 @@ export const GetProductsPaginatedQuerySchema = z.object({
   approveStatus: z
     .enum(ApproveProductStatus)
     .optional(),
-  
-  shopId: z
-    .uuid(), // BẮT BUỘC để đảm bảo chỉ lấy sản phẩm của 1 shop
 })
 export class GetProductsPaginatedQueryDto extends createZodDto(GetProductsPaginatedQuerySchema) {}
 

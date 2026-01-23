@@ -11,6 +11,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { CreateCategoryCommand } from '~/application/commands/create-category/create-category.command'
 import { GetCategoriesQuery } from '~/application/queries/get-categories/get-categories.query'
 import { GetCategoryQuery } from '~/application/queries/get-category/get-category.query'
+import { GetRootCategoriesQuery } from '~/application/queries/get-root-categories/get-root-categories.query'
 import { CreateCategoryBodyDto } from '~/presentation/dtos/category.dto'
 
 
@@ -33,6 +34,13 @@ export class CategoryController {
     const categories = await this.queryBus.execute(new GetCategoriesQuery())
 
     return { message: 'Get categories successful', data: categories }
+  }
+
+  @Get('/root')
+  async getRootCategories(): Promise<any> {
+    const categories = await this.queryBus.execute(new GetRootCategoriesQuery())
+
+    return { message: 'Get root categories successful', data: categories }
   }
 
   @Get('/:id')

@@ -10,6 +10,10 @@ export class RabbitMQPublisher implements IMessagePublisher {
     private readonly notificationClient: ClientProxy,
     @Inject('INVENTORY_CLIENT') 
     private readonly inventoryClient: ClientProxy,
+    @Inject('USER_CLIENT') 
+    private readonly userClient: ClientProxy,
+    @Inject('SHOP_CLIENT') 
+    private readonly shopClient: ClientProxy,
   ) {}
 
   emitToInventoryService<T>(pattern: string, event: T): void {
@@ -17,7 +21,17 @@ export class RabbitMQPublisher implements IMessagePublisher {
   }
 
   async sendToInventoryService<T, R = any>(pattern: string, data: T): Promise<R> {
-    const response$ = this.inventoryClient.send<R, T>(pattern, data) // dấu $ là convention của coder, ko bắt buộc
+    const response$ = this.inventoryClient.send<R, T>(pattern, data)
+    return lastValueFrom(response$)
+  }
+
+  async sendToUserService<T, R = any>(pattern: string, data: T): Promise<R> {
+    const response$ = this.userClient.send<R, T>(pattern, data)
+    return lastValueFrom(response$)
+  }
+
+  async sendToShopService<T, R = any>(pattern: string, data: T): Promise<R> {
+    const response$ = this.shopClient.send<R, T>(pattern, data)
     return lastValueFrom(response$)
   }
 }

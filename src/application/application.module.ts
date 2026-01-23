@@ -19,6 +19,12 @@ import { DeleteBrandHandler } from './commands/delete-brand/delete-brand.command
 import { UpdateBrandHandler } from './commands/update-brand/update-brand.command.handler'
 import { UploadBrandLogoHandler } from './commands/upload-brand-logo/upload-brand-logo.command.handler'
 import { GetBrandsPaginatedHandler } from './queries/get-brands-paginated/get-brands-paginated.query.handler'
+import { GetRootCategoriesHandler } from './queries/get-root-categories/get-root-categories.query.handler'
+import { GetProductsPaginatedHandler } from './queries/get-products-paginated/get-products-paginated.query.handler'
+import { ApproveProductHandler } from './commands/approve-product/approve-product.command.handler'
+import { RejectProductHandler } from './commands/reject-product/reject-product.command.handler'
+import { HideProductHandler } from './commands/hide-product/hide-product.command.handler'
+import { UnhideProductHandler } from './commands/unhide-product/unhide-product.command.handler'
 
 const CommandHandlers = [
   CreateCategoryHandler,
@@ -30,6 +36,10 @@ const CommandHandlers = [
   DeleteBrandHandler,
   UpdateBrandHandler,
   UploadBrandLogoHandler,
+  ApproveProductHandler,
+  RejectProductHandler,
+  HideProductHandler,
+  UnhideProductHandler,
 ]
 
 const QueryHandlers = [
@@ -38,6 +48,8 @@ const QueryHandlers = [
   GetCategoryHandler,
   GetProductWithVariantsHandler,
   GetBrandsPaginatedHandler,
+  GetRootCategoriesHandler,
+  GetProductsPaginatedHandler,
 ]
 
 const EventHandlers = [

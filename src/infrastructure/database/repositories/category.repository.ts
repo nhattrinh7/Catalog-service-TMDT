@@ -18,7 +18,11 @@ export class CategoryRepository implements ICategoryRepository {
         name: categoryToCreate.name,
         description: categoryToCreate.description,
         parentId: categoryToCreate.parentId,
-        attributes: categoryToCreate.attributes as Prisma.InputJsonValue,
+        // Nếu attributes là null thì gán là giá trị NULL trong database, nếu chỉ dùng Prisma.InputJsonValue
+        // thì giá trị trường attributes trong database sẽ là chuỗi 'null' thay vì giá trị NULL
+        attributes: categoryToCreate.attributes === null 
+          ? Prisma.DbNull
+          : categoryToCreate.attributes as Prisma.InputJsonValue,
         createdAt: categoryToCreate.createdAt,
         updatedAt: categoryToCreate.updatedAt,
       }
@@ -39,5 +43,14 @@ export class CategoryRepository implements ICategoryRepository {
     if (!category) return null
     
     return CategoryMapper.toDomain(category)
+  }
+
+  async getRootCategories(): Promise<{ id: string; name: string }[]> {
+    const categories = await this.prisma.category.findMany({
+      where: { parentId: null },
+      select: { id: true, name: true },
+    })
+    
+    return categories
   }
 }

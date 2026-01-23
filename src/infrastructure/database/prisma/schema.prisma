@@ -37,17 +37,11 @@ model Category {
   @@map("categories")
 }
 
-enum ApproveProductStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-}
-
 model Product {
   id                String                @id @db.Uuid
   name              String
-  descriptions       String               @db.Text
-  attributes        Json                 
+  descriptions      String                @db.Text
+  attributes        Json                  
   shopId            String                @map("shop_id") @db.Uuid
   categoryId        String                @map("category_id") @db.Uuid
   mainImage         String                @map("main_image") @db.Text
@@ -56,7 +50,7 @@ model Product {
   ratingAvg         Float                 @map("rating_avg")
   ratingCount       Int                   @map("rating_count")
   unit              String                @db.VarChar(30)
-  isActive          Boolean               @map("is_active") @default(true) // trường này chỉ mang ý nghĩa có show ra cho người dùng ko
+  isActive          Boolean               @map("is_active") @default(true) // trường này chỉ mang ý nghĩa có show sp ra cho người dùng ko
   approveStatus     ApproveProductStatus  @default(PENDING) @map("approve_status")
   rejectReason      String?               @map("reject_reason") @db.Text
   createdAt         DateTime              @default(now()) @map("created_at")
@@ -64,8 +58,15 @@ model Product {
   
   category          Category              @relation(fields: [categoryId], references: [id])
   variants          ProductVariant[]
+  reviews           ProductReview[] 
 
   @@map("products")
+}
+
+enum ApproveProductStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 model ProductVariant {
@@ -78,6 +79,57 @@ model ProductVariant {
   updatedAt   DateTime @updatedAt @map("updated_at")
   
   product     Product  @relation(fields: [productId], references: [id])
+  productVariantOptionValues ProductVariantOptionValue[]
 
   @@map("product_variants")
+}
+
+model ProductReview {
+  id            String    @id @db.Uuid
+  productId     String    @map("product_id") @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  orderId       String    @map("order_id") @db.Uuid 
+  rating        Int                                    // 1-5 sao
+  content       String?   @db.Text                     // nullable vì có thể chỉ chấm sao
+  images        Json?                                  // mảng URL, tối đa 3 ảnh
+  video         String?   @db.Text                     // URL video, chỉ 1 cái
+  isHidden      Boolean   @default(false) @map("is_hidden")  
+  hiddenReason  String?   @map("hidden_reason") @db.Text
+  hiddenAt      DateTime? @map("hidden_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  
+  product       Product   @relation(fields: [productId], references: [id])
+
+  @@map("product_reviews")
+}
+
+model Option {
+  id          String   @id @db.Uuid
+  name        String   @db.VarChar(30)
+
+  optionValues OptionValue[]
+
+  @@map("options")
+}
+
+model OptionValue {
+  id          String   @id @db.Uuid
+  value       String   @db.VarChar(30)
+  optionId    String   @map("option_id") @db.Uuid
+
+  option      Option   @relation(fields: [optionId], references: [id])
+  productVariantOptionValues ProductVariantOptionValue[]
+  
+  @@map("option_values")
+}
+
+model ProductVariantOptionValue {
+  variantId     String   @map("variant_id") @db.Uuid
+  optionValueId String   @map("option_value_id") @db.Uuid
+
+  variant       ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)  // N-1
+  optionValue   OptionValue    @relation(fields: [optionValueId], references: [id])  // N-1
+
+  @@id([variantId, optionValueId])
+  @@map("product_variant_option_values")
 }

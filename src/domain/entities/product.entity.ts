@@ -59,6 +59,7 @@ export class Product extends AggregateRoot {
     galleryImage: Prisma.JsonValue
     video: string | null
     unit: string
+    approveStatus?: ApproveProductStatus
   }): void {
     this.name = props.name
     this.descriptions = props.descriptions
@@ -67,5 +68,31 @@ export class Product extends AggregateRoot {
     this.galleryImage = props.galleryImage
     this.video = props.video
     this.unit = props.unit
+    if (props.approveStatus !== undefined) {
+      this.approveStatus = props.approveStatus
+    }
+    this.updatedAt = new Date()
+  }
+
+  approve(): void {
+    this.approveStatus = ApproveProductStatus.ACCEPTED
+    this.rejectReason = null
+    this.updatedAt = new Date()
+  }
+
+  reject(reason: string): void {
+    this.approveStatus = ApproveProductStatus.REJECTED
+    this.rejectReason = reason
+    this.updatedAt = new Date()
+  }
+
+  hide(): void {
+    this.isActive = false
+    this.updatedAt = new Date()
+  }
+
+  unhide(): void {
+    this.isActive = true
+    this.updatedAt = new Date()
   }
 }

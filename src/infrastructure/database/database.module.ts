@@ -4,10 +4,16 @@ import { BRAND_REPOSITORY } from '~/domain/repositories/brand.repository.interfa
 import { CATEGORY_REPOSITORY } from '~/domain/repositories/category.repository.interface'
 import { PRODUCT_REPOSITORY } from '~/domain/repositories/product.repository.interface'
 import { PRODUCT_VARIANT_REPOSITORY } from '~/domain/repositories/product-variant.repository.interface'
+import { OPTION_REPOSITORY } from '~/domain/repositories/option.repository.interface'
+import { OPTION_VALUE_REPOSITORY } from '~/domain/repositories/option-value.repository.interface'
+import { PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY } from '~/domain/repositories/product-variant-option-value.repository.interface'
 import { BrandRepository } from '~/infrastructure/database/repositories/brand.repository'
 import { CategoryRepository } from '~/infrastructure/database/repositories/category.repository'
 import { ProductRepository } from '~/infrastructure/database/repositories/product.repository'
 import { ProductVariantRepository } from '~/infrastructure/database/repositories/product-variant.repository'
+import { OptionRepository } from '~/infrastructure/database/repositories/option.repository'
+import { OptionValueRepository } from '~/infrastructure/database/repositories/option-value.repository'
+import { ProductVariantOptionValueRepository } from '~/infrastructure/database/repositories/product-variant-option-value.repository'
 import { CqrsModule } from '@nestjs/cqrs'
 
 @Module({
@@ -30,12 +36,28 @@ import { CqrsModule } from '@nestjs/cqrs'
       provide: PRODUCT_VARIANT_REPOSITORY,
       useClass: ProductVariantRepository,
     },
+    {
+      provide: OPTION_REPOSITORY,
+      useClass: OptionRepository,
+    },
+    {
+      provide: OPTION_VALUE_REPOSITORY,
+      useClass: OptionValueRepository,
+    },
+    {
+      provide: PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY,
+      useClass: ProductVariantOptionValueRepository,
+    },
   ],
   exports: [
     BRAND_REPOSITORY,
     CATEGORY_REPOSITORY,
     PRODUCT_REPOSITORY,
-    PRODUCT_VARIANT_REPOSITORY
+    PRODUCT_VARIANT_REPOSITORY,
+    OPTION_REPOSITORY,
+    OPTION_VALUE_REPOSITORY,
+    PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY,
   ],
 })
 export class DatabaseModule {}
+

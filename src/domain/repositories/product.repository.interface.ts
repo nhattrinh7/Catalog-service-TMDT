@@ -14,6 +14,14 @@ export interface IProductRepository {
     shopId: string // BẮT BUỘC
   }): Promise<PaginatedResult<Product>>
 
+  findPaginatedByCategoryIds(params: {
+    page: number
+    limit: number
+    search?: string
+    approveStatus?: string
+    categoryIds: string[]
+  }): Promise<PaginatedResult<Product>>
+
   findByIdWithVariants(id: string): Promise<IProductWithVariants | null>
 
   findById(id: string): Promise<Product | null>
@@ -21,3 +29,4 @@ export interface IProductRepository {
   update(product: Product): Promise<Product>
 }
 export const PRODUCT_REPOSITORY = Symbol('IProductRepository')
+
