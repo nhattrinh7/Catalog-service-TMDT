@@ -13,6 +13,7 @@ import {
   Get,
   Query,
   Put,
+  Delete,
 } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { FileInterceptor } from '@nestjs/platform-express'
@@ -24,6 +25,7 @@ import { ApproveProductCommand } from '~/application/commands/approve-product/ap
 import { RejectProductCommand } from '~/application/commands/reject-product/reject-product.command'
 import { HideProductCommand } from '~/application/commands/hide-product/hide-product.command'
 import { UnhideProductCommand } from '~/application/commands/unhide-product/unhide-product.command'
+import { SoftDeleteProductCommand } from '~/application/commands/soft-delete-product/soft-delete-product.command'
 import { GetProductWithVariantsQuery } from '~/application/queries/get-product-with-variants/get-product-with-variants.query'
 import { GetShopProductsPaginatedQuery } from '~/application/queries/get-shop-products-paginated/get-shop-products-paginated.query'
 import { GetProductsPaginatedQuery } from '~/application/queries/get-products-paginated/get-products-paginated.query'
@@ -118,6 +120,16 @@ export class ProductController {
     await this.commandBus.execute(new UpdateProductCommand(id, body))
 
     return { message: 'Update product successful' }
+  }
+
+  @Delete(':id/soft-delete')
+  async softDeleteProduct(
+    @Param('id') id: string,
+    @Headers('x-user-id') userId: string,
+  ): Promise<any> {
+    await this.commandBus.execute(new SoftDeleteProductCommand(id, userId))
+
+    return { message: 'Soft delete product successful' }
   }
 
   @Patch('/:id/hide')

@@ -15,3 +15,12 @@ export interface IProductWithVariantsAndStock extends Product {
   variants: IProductVariantWithStock[]
   category: { name: string }
 }
+
+export interface IClassification {
+  name: string
+  values: string[]
+}
+
+export interface IProductWithVariantsAndClassifications extends IProductWithVariantsAndStock {
+  classifications: IClassification[]
+}

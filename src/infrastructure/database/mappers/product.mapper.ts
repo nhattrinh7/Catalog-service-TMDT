@@ -19,6 +19,9 @@ export class ProductMapper {
       prismaProduct.isActive,
       prismaProduct.approveStatus,
       prismaProduct.rejectReason,
+      prismaProduct.isDeleted,
+      prismaProduct.deletedAt,
+      prismaProduct.deletedBy,
       prismaProduct.createdAt,
       prismaProduct.updatedAt,
     )
@@ -41,6 +44,9 @@ export class ProductMapper {
       isActive: product.isActive,
       approveStatus: product.approveStatus,
       rejectReason: product.rejectReason,
+      isDeleted: product.isDeleted,
+      deletedAt: product.deletedAt,
+      deletedBy: product.deletedBy,
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
     }

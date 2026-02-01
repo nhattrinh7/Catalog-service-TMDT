@@ -53,4 +53,23 @@ export class CategoryRepository implements ICategoryRepository {
     
     return categories
   }
+
+  async getCategoryHierarchy(categoryId: string): Promise<string[]> {
+    const hierarchy: string[] = []
+    let currentId: string | null = categoryId
+
+    while (currentId) {
+      const category = await this.prisma.category.findUnique({
+        where: { id: currentId },
+        select: { name: true, parentId: true },
+      })
+
+      if (!category) break
+
+      hierarchy.push(category.name)
+      currentId = category.parentId
+    }
+
+    return hierarchy
+  }
 }

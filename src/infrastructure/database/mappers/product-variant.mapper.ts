@@ -11,6 +11,7 @@ export class ProductVariantMapper {
       prismaProductVariant.image,
       prismaProductVariant.createdAt,
       prismaProductVariant.updatedAt,
+      prismaProductVariant.isDeleted,
     )
   }
 
@@ -23,6 +24,7 @@ export class ProductVariantMapper {
       image: productVariant.image,
       createdAt: productVariant.createdAt,
       updatedAt: productVariant.updatedAt,
+      isDeleted: productVariant.isDeleted,
     }
   }
 }

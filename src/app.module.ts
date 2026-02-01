@@ -28,6 +28,7 @@ import { APP_GUARD } from '@nestjs/core'
       isGlobal: true,
       validationSchema: Joi.object({
         DATABASE_URL: Joi.string().required(),
+        ELASTICSEARCH_NODE: Joi.string().default('http://localhost:9200'),
       }),
       validationOptions: {
         abortEarly: true, // Show 1 errors per times

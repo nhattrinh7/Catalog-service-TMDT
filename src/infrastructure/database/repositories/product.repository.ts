@@ -74,6 +74,9 @@ export class ProductRepository implements IProductRepository {
     queryParams.push(shopId)
     paramIndex++
 
+    // Filter bỏ sản phẩm đã xóa mềm
+    conditions.push(`is_deleted = false`)
+
     // Tạo WHERE clause
     const whereClause = conditions.length > 0 
       ? 'WHERE ' + conditions.join(' AND ') 
@@ -197,6 +200,9 @@ export class ProductRepository implements IProductRepository {
     queryParams.push(...categoryIds)
     paramIndex += categoryIds.length
 
+    // Filter bỏ sản phẩm đã xóa mềm
+    conditions.push(`is_deleted = false`)
+
     // Tạo WHERE clause
     const whereClause = conditions.length > 0 
       ? 'WHERE ' + conditions.join(' AND ') 
@@ -269,8 +275,8 @@ export class ProductRepository implements IProductRepository {
   }
 
   async findByIdWithVariants(id: string): Promise<IProductWithVariants | null> {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
+    const product = await this.prisma.product.findFirst({
+      where: { id, isDeleted: false },
       include: { variants: true, category: { select: { name: true } } },
     })
     if (!product) return null
@@ -303,7 +309,9 @@ export class ProductRepository implements IProductRepository {
   }
 
   async findById(id: string): Promise<Product | null> {
-    const product = await this.prisma.product.findUnique({ where: { id } })
+    const product = await this.prisma.product.findFirst({ 
+      where: { id, isDeleted: false } 
+    })
     if (!product) return null
     return ProductMapper.toDomain(product)
   }

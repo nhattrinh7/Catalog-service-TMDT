@@ -11,6 +11,7 @@ export class ProductVariant extends AggregateRoot {
     public image: string,
     public readonly createdAt: Date,
     public updatedAt: Date,
+    public isDeleted: boolean = false,
   ) {
     super()
   }
@@ -24,6 +25,7 @@ export class ProductVariant extends AggregateRoot {
       props.image,
       new Date(),
       new Date(),
+      false,
     )
     
     return productVariant

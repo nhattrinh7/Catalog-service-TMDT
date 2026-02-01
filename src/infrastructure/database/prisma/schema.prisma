@@ -53,6 +53,9 @@ model Product {
   isActive          Boolean               @map("is_active") @default(true) // trường này chỉ mang ý nghĩa có show sp ra cho người dùng ko
   approveStatus     ApproveProductStatus  @default(PENDING) @map("approve_status")
   rejectReason      String?               @map("reject_reason") @db.Text
+  isDeleted         Boolean               @default(false) @map("is_deleted")
+  deletedAt         DateTime?             @map("deleted_at")
+  deletedBy         String?               @map("deleted_by") @db.Uuid
   createdAt         DateTime              @default(now()) @map("created_at")
   updatedAt         DateTime              @updatedAt @map("updated_at")
   
@@ -77,6 +80,7 @@ model ProductVariant {
   image       String   @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  isDeleted   Boolean   @default(false) @map("is_deleted")
   
   product     Product  @relation(fields: [productId], references: [id])
   productVariantOptionValues ProductVariantOptionValue[]
@@ -88,7 +92,8 @@ model ProductReview {
   id            String    @id @db.Uuid
   productId     String    @map("product_id") @db.Uuid
   userId        String    @map("user_id") @db.Uuid
-  orderId       String    @map("order_id") @db.Uuid 
+  orderId       String    @map("order_id") @db.Uuid
+  sku           String    @db.VarChar(30)              // Xanh Blue
   rating        Int                                    // 1-5 sao
   content       String?   @db.Text                     // nullable vì có thể chỉ chấm sao
   images        Json?                                  // mảng URL, tối đa 3 ảnh

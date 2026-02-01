@@ -30,8 +30,28 @@ export class ProductVariantRepository implements IProductVariantRepository {
 
   async findByIds(ids: string[]): Promise<ProductVariant[]> {
     const variants = await this.prisma.productVariant.findMany({
-      where: { id: { in: ids } },
+      where: { 
+        id: { in: ids },
+        isDeleted: false,
+      },
     })
     return variants.map(variant => ProductVariantMapper.toDomain(variant))
+  }
+
+  async findByProductId(productId: string): Promise<ProductVariant[]> {
+    const variants = await this.prisma.productVariant.findMany({
+      where: { 
+        productId,
+        isDeleted: false,
+      },
+    })
+    return variants.map(variant => ProductVariantMapper.toDomain(variant))
+  }
+
+  async softDeleteByIds(ids: string[]): Promise<void> {
+    await this.prisma.productVariant.updateMany({
+      where: { id: { in: ids } },
+      data: { isDeleted: true },
+    })
   }
 }

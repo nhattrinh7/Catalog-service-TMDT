@@ -21,6 +21,9 @@ export class Product extends AggregateRoot {
     public isActive: boolean,
     public approveStatus: ApproveProductStatus,
     public rejectReason: string | null,
+    public isDeleted: boolean,
+    public deletedAt: Date | null,
+    public deletedBy: string | null,
     public readonly createdAt: Date,
     public updatedAt: Date,
   ) {
@@ -43,6 +46,9 @@ export class Product extends AggregateRoot {
       props.unit,
       true,
       ApproveProductStatus.PENDING,
+      null,
+      false,
+      null,
       null,
       new Date(),
       new Date(),
@@ -93,6 +99,13 @@ export class Product extends AggregateRoot {
 
   unhide(): void {
     this.isActive = true
+    this.updatedAt = new Date()
+  }
+
+  softDelete(deletedBy: string): void {
+    this.isDeleted = true
+    this.deletedAt = new Date()
+    this.deletedBy = deletedBy
     this.updatedAt = new Date()
   }
 }

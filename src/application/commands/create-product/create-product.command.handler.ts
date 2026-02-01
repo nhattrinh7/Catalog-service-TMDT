@@ -12,6 +12,7 @@ import { PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY, type IProductVariantOptionValu
 import { Option } from '~/domain/entities/option.entity'
 import { OptionValue } from '~/domain/entities/option-value.entity'
 
+
 @CommandHandler(CreateProductCommand)
 export class CreateProductHandler implements ICommandHandler<CreateProductCommand, void> {
   constructor(
@@ -25,6 +26,7 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
     private readonly optionValueRepository: IOptionValueRepository,
     @Inject(PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY)
     private readonly productVariantOptionValueRepository: IProductVariantOptionValueRepository,
+
     private readonly eventBus: EventBus,
   ) {}
 
@@ -113,5 +115,8 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
 
     // Bắn event
     this.eventBus.publish(new ProductCreatedEvent(dataToSend))
+
+    // KHÔNG đồng bộ với Elasticsearch khi tạo mới
+    // Sản phẩm chỉ được index vào Elasticsearch khi được duyệt (ACCEPTED)
   }
 }

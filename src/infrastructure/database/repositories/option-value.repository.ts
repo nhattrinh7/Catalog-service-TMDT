@@ -25,4 +25,17 @@ export class OptionValueRepository implements IOptionValueRepository {
     })
     return optionValues.map(ov => OptionValueMapper.toDomain(ov))
   }
+
+  async findByOptionIds(optionIds: string[]): Promise<OptionValue[]> {
+    const optionValues = await this.prisma.optionValue.findMany({
+      where: { optionId: { in: optionIds } },
+    })
+    return optionValues.map(ov => OptionValueMapper.toDomain(ov))
+  }
+
+  async deleteByIds(ids: string[]): Promise<void> {
+    await this.prisma.optionValue.deleteMany({
+      where: { id: { in: ids } },
+    })
+  }
 }

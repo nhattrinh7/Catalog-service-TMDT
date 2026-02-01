@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { DatabaseModule } from '~/infrastructure/database/database.module'
 import { MessagingModule } from '~/infrastructure/messaging/messaging.module'
+import { ElasticsearchModule } from '~/infrastructure/elasticsearch/elasticsearch.module'
 import { CloudinaryService } from '~/common/services/cloudinary.service'
 import { CreateCategoryHandler } from './commands/create-category/create-category.command.handler'
 import { GetCategoriesHandler } from './queries/get-categories/get-categories.query.handler'
@@ -25,6 +26,7 @@ import { ApproveProductHandler } from './commands/approve-product/approve-produc
 import { RejectProductHandler } from './commands/reject-product/reject-product.command.handler'
 import { HideProductHandler } from './commands/hide-product/hide-product.command.handler'
 import { UnhideProductHandler } from './commands/unhide-product/unhide-product.command.handler'
+import { SoftDeleteProductHandler } from './commands/soft-delete-product/soft-delete-product.command.handler'
 
 const CommandHandlers = [
   CreateCategoryHandler,
@@ -40,6 +42,7 @@ const CommandHandlers = [
   RejectProductHandler,
   HideProductHandler,
   UnhideProductHandler,
+  SoftDeleteProductHandler,
 ]
 
 const QueryHandlers = [
@@ -61,7 +64,8 @@ const EventHandlers = [
   imports: [
     CqrsModule,
     DatabaseModule,
-    MessagingModule
+    MessagingModule,
+    ElasticsearchModule,
   ],
   providers: [
     ...CommandHandlers,

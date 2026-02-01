@@ -5,5 +5,6 @@ export interface ICategoryRepository {
   getCategories(): Promise<Category[] | null>
   getCategory(id: string): Promise<Category | null>
   getRootCategories(): Promise<{ id: string; name: string }[]>
+  getCategoryHierarchy(categoryId: string): Promise<string[]>
 }
 export const CATEGORY_REPOSITORY = Symbol('ICategoryRepository')

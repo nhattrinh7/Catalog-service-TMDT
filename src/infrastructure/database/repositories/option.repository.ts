@@ -21,4 +21,33 @@ export class OptionRepository implements IOptionRepository {
     })
     return option ? OptionMapper.toDomain(option) : null
   }
+
+  async findByProductId(productId: string): Promise<Option[]> {
+    // Tìm options của product thông qua join:
+    // product → product_variants → product_variant_option_values → option_values → options
+    const options = await this.prisma.option.findMany({
+      where: {
+        optionValues: {
+          some: {
+            productVariantOptionValues: {
+              some: {
+                variant: {
+                  productId,
+                  isDeleted: false,
+                },
+              },
+            },
+          },
+        },
+      },
+      distinct: ['id'], // Loại bỏ duplicate
+    })
+    return options.map(option => OptionMapper.toDomain(option))
+  }
+
+  async deleteByIds(ids: string[]): Promise<void> {
+    await this.prisma.option.deleteMany({
+      where: { id: { in: ids } },
+    })
+  }
 }

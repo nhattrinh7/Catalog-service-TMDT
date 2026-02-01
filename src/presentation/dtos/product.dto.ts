@@ -66,13 +66,15 @@ export const UpdateProductSchema = ProductSchema.pick({
 })
 export class UpdateProductDto extends createZodDto(UpdateProductSchema) {}
 export const UpdateProductBodySchema = UpdateProductSchema.extend({
+  classifications: z.array(ClassificationSchema).optional(),
   variants: z.array(
     z.object({
-      id: z.uuid(),
+      id: z.uuid().optional(),  // Optional - variant mới không có id
       image: z.url(),
       price: z.number().min(0),
       sku: z.string().max(100),
       stock: z.number().min(0),
+      optionValues: z.array(z.string().max(30)).optional(),  // Thêm optionValues
     })
   )
 })
