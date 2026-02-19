@@ -72,4 +72,30 @@ export class CategoryRepository implements ICategoryRepository {
 
     return hierarchy
   }
+
+  // Lấy tất cả categoryId con/cháu từ danh sách parentIds (bao gồm chính parentIds)
+  async findAllDescendantIds(parentIds: string[]): Promise<string[]> {
+    if (parentIds.length === 0) return []
+
+    const allIds = new Set<string>(parentIds)
+    let currentLevelIds = [...parentIds]
+
+    // BFS: tìm con ở mỗi cấp cho đến khi không còn con nào
+    while (currentLevelIds.length > 0) {
+      const children = await this.prisma.category.findMany({
+        where: { parentId: { in: currentLevelIds } },
+        select: { id: true },
+      })
+
+      currentLevelIds = []
+      for (const child of children) {
+        if (!allIds.has(child.id)) {
+          allIds.add(child.id)
+          currentLevelIds.push(child.id)
+        }
+      }
+    }
+
+    return Array.from(allIds)
+  }
 }

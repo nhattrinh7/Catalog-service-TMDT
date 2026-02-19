@@ -50,7 +50,7 @@ export class ApproveProductHandler implements ICommandHandler<ApproveProductComm
       0, // buy_count = 0 cho sản phẩm mới duyệt
       true, // is_in_stock = true cho sản phẩm mới duyệt
     )
-
+    console.log('productSearchDocument', productSearchDocument)
     // Index vào Elasticsearch
     await this.productSearchRepository.indexProduct(productSearchDocument)
   }

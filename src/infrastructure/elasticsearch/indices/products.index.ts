@@ -57,6 +57,9 @@ export const PRODUCTS_INDEX_CONFIG = {
       id: {
         type: 'keyword',
       },
+      shopId: {
+        type: 'keyword',
+      },
       sku: {
         type: 'text',
         analyzer: 'vietnamese_analyzer',

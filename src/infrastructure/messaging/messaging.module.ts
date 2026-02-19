@@ -1,10 +1,16 @@
 import { Module } from '@nestjs/common'
+import { CqrsModule } from '@nestjs/cqrs'
 import { ClientsModule, Transport } from '@nestjs/microservices'
 import { MESSAGE_PUBLISHER } from '~/domain/contracts/message-publisher.interface'
 import { RabbitMQPublisher } from '~/infrastructure/messaging/publishers/rabbitmq.publisher'
+import { GetVariantInfoConsumer } from '~/infrastructure/messaging/consumers/get-variant-info.consumer'
+import { GetProductsWithLevel1CategoriesConsumer } from '~/infrastructure/messaging/consumers/get-products-with-level1-categories.consumer'
+import { GetVariantsBatchConsumer } from '~/infrastructure/messaging/consumers/get-variants-batch.consumer'
+import { GetDescendantCategoryIdsConsumer } from '~/infrastructure/messaging/consumers/get-descendant-category-ids.consumer'
 
 @Module({
   imports: [
+    CqrsModule,
     ClientsModule.register([
       {
         name: 'NOTIFICATION_CLIENT',
@@ -49,6 +55,12 @@ import { RabbitMQPublisher } from '~/infrastructure/messaging/publishers/rabbitm
       provide: MESSAGE_PUBLISHER,
       useClass: RabbitMQPublisher,
     },
+  ],
+  controllers: [
+    GetVariantInfoConsumer,
+    GetProductsWithLevel1CategoriesConsumer,
+    GetVariantsBatchConsumer,
+    GetDescendantCategoryIdsConsumer,
   ],
   exports: [ClientsModule, MESSAGE_PUBLISHER],
 })

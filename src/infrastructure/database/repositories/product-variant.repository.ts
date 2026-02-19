@@ -8,19 +8,21 @@ import { ProductVariantMapper } from '~/infrastructure/database/mappers/product-
 export class ProductVariantRepository implements IProductVariantRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createMany(productVariants: ProductVariant[]): Promise<void> {
-    await this.prisma.productVariant.createMany({
+  async createMany(productVariants: ProductVariant[], tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.productVariant.createMany({
       data: productVariants.map(variant => 
         ProductVariantMapper.toPersistence(variant)
       ),
     })
   }
 
-  async updateMany(productVariants: ProductVariant[]): Promise<void> {
+  async updateMany(productVariants: ProductVariant[], tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
     // Update từng variant vì Prisma không support updateMany với different data
     await Promise.all(
       productVariants.map(variant =>
-        this.prisma.productVariant.update({
+        client.productVariant.update({
           where: { id: variant.id },
           data: ProductVariantMapper.toPersistence(variant),
         })
@@ -48,10 +50,50 @@ export class ProductVariantRepository implements IProductVariantRepository {
     return variants.map(variant => ProductVariantMapper.toDomain(variant))
   }
 
-  async softDeleteByIds(ids: string[]): Promise<void> {
-    await this.prisma.productVariant.updateMany({
+  async softDeleteByIds(ids: string[], tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.productVariant.updateMany({
       where: { id: { in: ids } },
       data: { isDeleted: true },
     })
+  }
+
+  async findVariantWithProduct(variantId: string): Promise<any> {
+    const variant = await this.prisma.productVariant.findUnique({
+      where: { 
+        id: variantId,
+        isDeleted: false,
+      },
+      include: {
+        product: {
+          select: {
+            id: true,
+            name: true,
+            shopId: true,
+          }
+        }
+      }
+    })
+    return variant
+  }
+
+  async findVariantsWithProductBatch(variantIds: string[]): Promise<any[]> {
+    const variants = await this.prisma.productVariant.findMany({
+      where: {
+        id: { in: variantIds },
+        isDeleted: false,
+      },
+      include: {
+        product: {
+          select: {
+            id: true,
+            name: true,
+            shopId: true,
+            categoryId: true,
+          },
+        },
+      },
+    })
+    return variants
   }
 }

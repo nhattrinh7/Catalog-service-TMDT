@@ -11,6 +11,7 @@ import { OPTION_VALUE_REPOSITORY, type IOptionValueRepository } from '~/domain/r
 import { PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY, type IProductVariantOptionValueRepository } from '~/domain/repositories/product-variant-option-value.repository.interface'
 import { Option } from '~/domain/entities/option.entity'
 import { OptionValue } from '~/domain/entities/option-value.entity'
+import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
 
 
 @CommandHandler(CreateProductCommand)
@@ -28,6 +29,7 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
     private readonly productVariantOptionValueRepository: IProductVariantOptionValueRepository,
 
     private readonly eventBus: EventBus,
+    private readonly prismaService: PrismaService,
   ) {}
 
   async execute(command: CreateProductCommand) {
@@ -45,65 +47,71 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
       video: body.video,
       unit: body.unit
     })
-    const savedProduct = await this.productRepository.create(product)
 
-    // Tạo Options và OptionValues từ classifications
-    // Map: optionValueName -> optionValueId để dùng khi tạo ProductVariantOptionValue
-    const optionValueNameToIdMap = new Map<string, string>()
+    // Wrap tất cả DB writes trong transaction
+    const { savedProduct, productVariants } = await this.prismaService.transaction(async (tx) => {
+      const savedProduct = await this.productRepository.create(product, tx)
 
-    if (body.classifications && body.classifications.length > 0) {
-      for (const classification of body.classifications) {
-        // Tạo Option
-        const option = Option.create({ name: classification.name })
-        const savedOption = await this.optionRepository.create(option)
+      // Tạo Options và OptionValues từ classifications
+      // Map: optionValueName -> optionValueId để dùng khi tạo ProductVariantOptionValue
+      const optionValueNameToIdMap = new Map<string, string>()
 
-        // Tạo OptionValues cho option này
-        const optionValues = classification.values.map(value =>
-          OptionValue.create({ value, optionId: savedOption.id })
-        )
-        const savedOptionValues = await this.optionValueRepository.createMany(optionValues)
+      if (body.classifications && body.classifications.length > 0) {
+        for (const classification of body.classifications) {
+          // Tạo Option
+          const option = Option.create({ name: classification.name })
+          const savedOption = await this.optionRepository.create(option, tx)
 
-        // Lưu vào map để tra cứu sau
-        for (const ov of savedOptionValues) {
-          optionValueNameToIdMap.set(ov.value, ov.id)
-        }
-      }
-    }
+          // Tạo OptionValues cho option này
+          const optionValues = classification.values.map(value =>
+            OptionValue.create({ value, optionId: savedOption.id })
+          )
+          const savedOptionValues = await this.optionValueRepository.createMany(optionValues, tx)
 
-    // Lấy id của product mới cùng thông tin các product variant để tạo các product variant records
-    const productVariants = body.variants.map((variantData) => 
-      ProductVariant.create({
-        productId: savedProduct.id,
-        sku: variantData.sku,
-        price: variantData.price,
-        image: variantData.image,
-      })
-    )
-    await this.productVariantRepository.createMany(productVariants)
-
-    // Tạo ProductVariantOptionValue (liên kết variant với optionValues)
-    const productVariantOptionValuesData: { variantId: string; optionValueId: string }[] = []
-    
-    for (let i = 0; i < productVariants.length; i++) {
-      const variant = productVariants[i]
-      const variantData = body.variants[i]
-      
-      if (variantData.optionValues && variantData.optionValues.length > 0) {
-        for (const optionValueName of variantData.optionValues) {
-          const optionValueId = optionValueNameToIdMap.get(optionValueName)
-          if (optionValueId) {
-            productVariantOptionValuesData.push({
-              variantId: variant.id,
-              optionValueId,
-            })
+          // Lưu vào map để tra cứu sau
+          for (const ov of savedOptionValues) {
+            optionValueNameToIdMap.set(ov.value, ov.id)
           }
         }
       }
-    }
 
-    if (productVariantOptionValuesData.length > 0) {
-      await this.productVariantOptionValueRepository.createMany(productVariantOptionValuesData)
-    }
+      // Lấy id của product mới cùng thông tin các product variant để tạo các product variant records
+      const productVariants = body.variants.map((variantData) => 
+        ProductVariant.create({
+          productId: savedProduct.id,
+          sku: variantData.sku,
+          price: variantData.price,
+          image: variantData.image,
+        })
+      )
+      await this.productVariantRepository.createMany(productVariants, tx)
+
+      // Tạo ProductVariantOptionValue (liên kết variant với optionValues)
+      const productVariantOptionValuesData: { variantId: string; optionValueId: string }[] = []
+      
+      for (let i = 0; i < productVariants.length; i++) {
+        const variant = productVariants[i]
+        const variantData = body.variants[i]
+        
+        if (variantData.optionValues && variantData.optionValues.length > 0) {
+          for (const optionValueName of variantData.optionValues) {
+            const optionValueId = optionValueNameToIdMap.get(optionValueName)
+            if (optionValueId) {
+              productVariantOptionValuesData.push({
+                variantId: variant.id,
+                optionValueId,
+              })
+            }
+          }
+        }
+      }
+
+      if (productVariantOptionValuesData.length > 0) {
+        await this.productVariantOptionValueRepository.createMany(productVariantOptionValuesData, tx)
+      }
+
+      return { savedProduct, productVariants }
+    })
 
     // Chuẩn bị các productVariantId, stock và shopId để gửi qua inventory-service
     const dataToSend = productVariants.map((variant, index) => ({
@@ -113,7 +121,7 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
       shopId: body.shopId,
     }))
 
-    // Bắn event
+    // Bắn event NGOÀI transaction
     this.eventBus.publish(new ProductCreatedEvent(dataToSend))
 
     // KHÔNG đồng bộ với Elasticsearch khi tạo mới

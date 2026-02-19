@@ -72,6 +72,7 @@ enum ApproveProductStatus {
   REJECTED
 }
 
+// Nên có thêm trường name là name của product để hiển thị trong cart cho tiện
 model ProductVariant {
   id          String   @id @db.Uuid
   productId   String   @map("product_id") @db.Uuid
@@ -92,7 +93,7 @@ model ProductReview {
   id            String    @id @db.Uuid
   productId     String    @map("product_id") @db.Uuid
   userId        String    @map("user_id") @db.Uuid
-  orderId       String    @map("order_id") @db.Uuid
+  orderId       String    @unique @map("order_id") @db.Uuid
   sku           String    @db.VarChar(30)              // Xanh Blue
   rating        Int                                    // 1-5 sao
   content       String?   @db.Text                     // nullable vì có thể chỉ chấm sao

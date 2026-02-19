@@ -1,9 +1,16 @@
 import { Product } from "~/domain/entities/product.entity"
+import { ProductReview } from "~/domain/entities/product-review.entity"
 import { IProductWithVariants } from "~/domain/interfaces/product.interface"
 import { PaginatedResult } from "~/domain/types/pagination.types"
 
+export interface ProductWithLevel1Category {
+  productId: string
+  categoryId: string
+  level1CategoryId: string
+}
+
 export interface IProductRepository {
-  create(product: Product): Promise<Product>
+  create(product: Product, tx?: any): Promise<Product>
   
   findPaginated(params: {
     page: number
@@ -26,7 +33,21 @@ export interface IProductRepository {
 
   findById(id: string): Promise<Product | null>
 
-  update(product: Product): Promise<Product>
+  update(product: Product, tx?: any): Promise<Product>
+
+  // Lấy reviews của product
+  findReviewsPaginated(params: {
+    productId: string
+    page: number
+    limit: number
+    rating?: string
+    hasMedia?: boolean
+  }): Promise<PaginatedResult<ProductReview>>
+
+  countProductAmountByShopId(shopId: string): Promise<number>
+
+  findProductsWithLevel1Categories(productIds: string[]): Promise<ProductWithLevel1Category[]>
 }
 export const PRODUCT_REPOSITORY = Symbol('IProductRepository')
+
 

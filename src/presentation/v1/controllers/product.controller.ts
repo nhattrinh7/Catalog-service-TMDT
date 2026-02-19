@@ -29,7 +29,10 @@ import { SoftDeleteProductCommand } from '~/application/commands/soft-delete-pro
 import { GetProductWithVariantsQuery } from '~/application/queries/get-product-with-variants/get-product-with-variants.query'
 import { GetShopProductsPaginatedQuery } from '~/application/queries/get-shop-products-paginated/get-shop-products-paginated.query'
 import { GetProductsPaginatedQuery } from '~/application/queries/get-products-paginated/get-products-paginated.query'
+import { GetProductReviewsPaginatedQuery } from '~/application/queries/get-product-reviews-paginated/get-product-reviews-paginated.query'
+import { GetProductToSoldQuery } from '~/application/queries/get-product-to-sold/get-product-to-sold.query'
 import { CreateProductBodyDto, GetProductsPaginatedQueryDto, UpdateProductBodyDto } from '~/presentation/dtos/product.dto'
+import { GetProductReviewsPaginatedQueryDto } from '~/presentation/dtos/product-review.dto'
 
 @Controller('v1/products')
 export class ProductController {
@@ -150,7 +153,7 @@ export class ProductController {
     return { message: 'Unhide product successful' }
   }
 
-  // ADMIN MỚI ĐƯỢC DÙNG
+  // ***ADMIN MỚI ĐƯỢC DÙNG***
   @Get('/')
   async getProductsPaginated(
     @Query() query: GetProductsPaginatedQueryDto,
@@ -184,6 +187,32 @@ export class ProductController {
     await this.commandBus.execute(new RejectProductCommand(id, body.rejectReason))
 
     return { message: 'Reject product successful' }
+  }
+
+  // ***PUBLIC***
+  @Get('/:id/reviews')
+  async getProductReviewPaginated(
+    @Query() query: GetProductReviewsPaginatedQueryDto,
+    @Param('id') id: string,
+  ): Promise<{ message: string, data: any }> {
+    const result = await this.queryBus.execute(new GetProductReviewsPaginatedQuery(
+      id,
+      query.page,
+      query.limit,
+      query.rating,
+      query.hasMedia,
+    ))
+
+    return { message: 'Get product reviews paginated successful', data: result}
+  }
+
+  @Get('/:id/to-sold')
+  async getProductToSold(
+    @Param('id') id: string,
+  ): Promise<{ message: string, data: any }> {
+    const result = await this.queryBus.execute(new GetProductToSoldQuery(id))
+
+    return { message: 'Get product to sold successful', data: result}
   }
 
 }

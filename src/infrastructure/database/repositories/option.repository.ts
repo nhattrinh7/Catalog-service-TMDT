@@ -8,8 +8,9 @@ import { OptionMapper } from '~/infrastructure/database/mappers/option.mapper'
 export class OptionRepository implements IOptionRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(option: Option): Promise<Option> {
-    const createdOption = await this.prisma.option.create({
+  async create(option: Option, tx?: any): Promise<Option> {
+    const client = tx ?? this.prisma
+    const createdOption = await client.option.create({
       data: OptionMapper.toPersistence(option),
     })
     return OptionMapper.toDomain(createdOption)
@@ -45,8 +46,9 @@ export class OptionRepository implements IOptionRepository {
     return options.map(option => OptionMapper.toDomain(option))
   }
 
-  async deleteByIds(ids: string[]): Promise<void> {
-    await this.prisma.option.deleteMany({
+  async deleteByIds(ids: string[], tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.option.deleteMany({
       where: { id: { in: ids } },
     })
   }

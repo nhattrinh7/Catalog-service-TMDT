@@ -50,6 +50,7 @@ import { CqrsModule } from '@nestjs/cqrs'
     },
   ],
   exports: [
+    PrismaService,
     BRAND_REPOSITORY,
     CATEGORY_REPOSITORY,
     PRODUCT_REPOSITORY,

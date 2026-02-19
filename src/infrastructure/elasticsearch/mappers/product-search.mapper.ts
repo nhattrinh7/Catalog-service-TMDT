@@ -21,6 +21,7 @@ export class ProductSearchMapper {
 
     return {
       id: product.id,
+      shopId: product.shopId,
       sku: skuText,
       name: product.name,
       main_image: product.mainImage,

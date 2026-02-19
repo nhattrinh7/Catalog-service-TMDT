@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
-import { IProductRepository } from '~/domain/repositories/product.repository.interface'
+import { IProductRepository, ProductWithLevel1Category } from '~/domain/repositories/product.repository.interface'
 import { Product } from '~/domain/entities/product.entity'
+import { ProductReview } from '~/domain/entities/product-review.entity'
 import { ProductMapper } from '~/infrastructure/database/mappers/product.mapper'
+import { ProductReviewMapper } from '~/infrastructure/database/mappers/product-review.mapper'
 import { Prisma } from '@prisma/client'
 import { PaginatedResult, calculatePaginationMeta } from '~/domain/types/pagination.types'
 import { ProductVariant } from '~/domain/entities/product-variant.entity'
@@ -13,10 +15,11 @@ import { IProductWithVariants } from '~/domain/interfaces/product.interface'
 export class ProductRepository implements IProductRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(product: Product): Promise<Product> {
+  async create(product: Product, tx?: any): Promise<Product> {
+    const client = tx ?? this.prisma
     const productToCreate = ProductMapper.toPersistence(product)
 
-    const createdProduct = await this.prisma.product.create({
+    const createdProduct = await client.product.create({
       data: {
         ...productToCreate,
         attributes: productToCreate.attributes as Prisma.InputJsonValue,
@@ -316,9 +319,10 @@ export class ProductRepository implements IProductRepository {
     return ProductMapper.toDomain(product)
   }
 
-  async update(product: Product): Promise<Product> {
+  async update(product: Product, tx?: any): Promise<Product> {
+    const client = tx ?? this.prisma
     const productToUpdate = ProductMapper.toPersistence(product)
-    const updatedProduct = await this.prisma.product.update({
+    const updatedProduct = await client.product.update({
       where: { id: product.id },
       data: {
         ...productToUpdate,
@@ -327,5 +331,132 @@ export class ProductRepository implements IProductRepository {
       },
     })
     return ProductMapper.toDomain(updatedProduct)
+  }
+
+  // Implement method lấy reviews theo DDD pattern
+  // Reviews chỉ được truy cập thông qua Product aggregate root
+  async findReviewsPaginated(params: {
+    productId: string
+    page: number
+    limit: number
+    rating?: string
+    hasMedia?: boolean
+  }): Promise<PaginatedResult<ProductReview>> {
+    const { productId, page, limit, rating, hasMedia } = params
+
+    // Build where clause
+    const where: any = {
+      productId,
+      isHidden: false, // Chỉ lấy review chưa bị ẩn
+    }
+
+    // Filter theo rating nếu có
+    if (rating) {
+      where.rating = parseInt(rating, 10)
+    }
+
+    // Filter theo hasMedia nếu có
+    if (hasMedia !== undefined) {
+      if (hasMedia) {
+        // Có media = có ít nhất 1 trong 2: images hoặc video
+        where.OR = [
+          { images: { not: Prisma.DbNull } },
+          { video: { not: null } },
+        ]
+      } else {
+        // Không có media = cả 2 đều null
+        where.images = { equals: Prisma.DbNull }
+        where.video = { equals: null }
+      }
+    }
+
+    // Đếm tổng số review
+    const total = await this.prisma.productReview.count({ where })
+
+    // Lấy danh sách review với phân trang
+    const prismaReviews = await this.prisma.productReview.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc', // Review mới nhất trước
+      },
+    })
+
+    // Sử dụng Mapper để chuyển từ Prisma model sang Domain entity
+    const items = ProductReviewMapper.toDomainArray(prismaReviews)
+
+    return {
+      items,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    }
+  }
+
+  async countProductAmountByShopId(shopId: string): Promise<number> {
+    return await this.prisma.product.count({
+      where: {
+        shopId,
+        isDeleted: false,
+        approveStatus: 'ACCEPTED',
+      },
+    })
+  }
+
+  async findProductsWithLevel1Categories(productIds: string[]): Promise<ProductWithLevel1Category[]> {
+    // Lấy products với categoryId
+    const products = await this.prisma.product.findMany({
+      where: {
+        id: { in: productIds },
+        isDeleted: false,
+      },
+      select: {
+        id: true,
+        categoryId: true,
+      },
+    })
+
+    // Resolve từng categoryId lên cấp 1
+    const results: ProductWithLevel1Category[] = []
+
+    for (const product of products) {
+      const level1CategoryId = await this.findLevel1CategoryId(product.categoryId)
+      
+      results.push({
+        productId: product.id,
+        categoryId: product.categoryId,
+        level1CategoryId,
+      })
+    }
+
+    return results
+  }
+
+  // Helper: Truy vết lên category cấp 1 (parentId = null)
+  private async findLevel1CategoryId(categoryId: string): Promise<string> {
+    let currentCategoryId = categoryId
+
+    while (true) {
+      const category = await this.prisma.category.findUnique({
+        where: { id: currentCategoryId },
+        select: { id: true, parentId: true },
+      })
+
+      if (!category) {
+        throw new NotFoundException(`Category not found: ${currentCategoryId}`)
+      }
+
+      // Nếu parentId = null => đây là category cấp 1
+      if (category.parentId === null) {
+        return category.id
+      }
+
+      // Tiếp tục lên parent
+      currentCategoryId = category.parentId
+    }
   }
 }

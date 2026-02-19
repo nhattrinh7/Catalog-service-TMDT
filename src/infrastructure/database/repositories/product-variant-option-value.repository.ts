@@ -6,8 +6,9 @@ import { IProductVariantOptionValueRepository } from '~/domain/repositories/prod
 export class ProductVariantOptionValueRepository implements IProductVariantOptionValueRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createMany(data: { variantId: string; optionValueId: string }[]): Promise<void> {
-    await this.prisma.productVariantOptionValue.createMany({
+  async createMany(data: { variantId: string; optionValueId: string }[], tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.productVariantOptionValue.createMany({
       data: data.map(item => ({
         variantId: item.variantId,
         optionValueId: item.optionValueId,
@@ -37,14 +38,16 @@ export class ProductVariantOptionValueRepository implements IProductVariantOptio
     return results
   }
 
-  async deleteByVariantIds(variantIds: string[]): Promise<void> {
-    await this.prisma.productVariantOptionValue.deleteMany({
+  async deleteByVariantIds(variantIds: string[], tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.productVariantOptionValue.deleteMany({
       where: { variantId: { in: variantIds } },
     })
   }
 
-  async deleteByOptionValueIds(optionValueIds: string[]): Promise<void> {
-    await this.prisma.productVariantOptionValue.deleteMany({
+  async deleteByOptionValueIds(optionValueIds: string[], tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.productVariantOptionValue.deleteMany({
       where: { optionValueId: { in: optionValueIds } },
     })
   }

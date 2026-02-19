@@ -13,6 +13,7 @@ import { CATEGORY_REPOSITORY, type ICategoryRepository } from '~/domain/reposito
 import { PRODUCT_SEARCH_REPOSITORY, type IProductSearchRepository } from '~/domain/repositories/product-search.repository.interface'
 import { MESSAGE_PUBLISHER, type IMessagePublisher } from '~/domain/contracts/message-publisher.interface'
 import { ProductSearchMapper } from '~/infrastructure/elasticsearch/mappers/product-search.mapper'
+import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
 
 @CommandHandler(UpdateProductCommand)
 export class UpdateProductHandler implements ICommandHandler<UpdateProductCommand, void> {
@@ -34,6 +35,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
     @Inject(MESSAGE_PUBLISHER)
     private readonly messagePublisher: IMessagePublisher,
     private readonly eventBus: EventBus,
+    private readonly prismaService: PrismaService,
   ) {}
 
   async execute(command: UpdateProductCommand) {
@@ -58,12 +60,16 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
       // Nếu sản phẩm đang update từng bị reject, cập nhật approveStatus thành PENDING để xin duyệt lại
       ...(isRejected && { approveStatus: 'PENDING' }),
     })
-    await this.productRepository.update(product)
 
-    // 4. Xử lý variants
-    await this.handleVariants(id, body, product.shopId)
+    // Wrap tất cả DB writes trong transaction
+    const { variantsToUpdate, newVariantEntities, variantsToCreate, variantsToDelete } = await this.prismaService.transaction(async (tx) => {
+      await this.productRepository.update(product, tx)
 
-    // 5. Đồng bộ với Elasticsearch CHỈ KHI trạng thái là ACCEPTED
+      // 4. Xử lý variants
+      return await this.handleVariants(id, body, product.shopId, tx)
+    })
+
+    // 5. Đồng bộ với Elasticsearch CHỈ KHI trạng thái là ACCEPTED (NGOÀI transaction)
     if (product.approveStatus === 'ACCEPTED') {
       // Lấy lại variants sau khi update (chỉ lấy những variant chưa bị soft delete)
       const updatedVariants = await this.productVariantRepository.findByProductId(id)
@@ -93,6 +99,28 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
       await this.productSearchRepository.updateProduct(id, productSearchDocument)
     }
     // Nếu trạng thái là PENDING hoặc REJECTED, không cập nhật Elasticsearch
+
+    // 9. Chuẩn bị data để emit sang inventory service
+    const stockUpdates = variantsToUpdate.map((v: any) => ({
+      productVariantId: v.id,
+      stock: v.stock,
+    }))
+
+    const variantsToCreateData = newVariantEntities.map((variant, index) => ({
+      productId: id,
+      productVariantId: variant.id,
+      stock: variantsToCreate[index].stock,
+      shopId: product.shopId,
+    }))
+
+    const variantsToDeleteIds = variantsToDelete.map(v => v.id)
+
+    // 10. Bắn event NGOÀI transaction
+    this.eventBus.publish(new ProductUpdatedEvent({
+      stockUpdates,
+      variantsToCreate: variantsToCreateData,
+      variantsToDelete: variantsToDeleteIds,
+    }))
   }
 
   /**
@@ -101,7 +129,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
    * - Có thể thêm option value mới
    * - Có thể bớt option hoặc option value (soft delete variants tương ứng)
    */
-  private async handleVariants(productId: string, body: any, shopId: string) {
+  private async handleVariants(productId: string, body: any, shopId: string, tx: any) {
     // 1. Lấy tất cả variants hiện có của product (chỉ lấy những variant chưa bị soft delete)
     const existingVariants = await this.productVariantRepository.findByProductId(productId)
     
@@ -127,7 +155,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
         const optionValues = newValues.map((value: string) =>
           OptionValue.create({ value, optionId: option.id })
         )
-        const savedOptionValues = await this.optionValueRepository.createMany(optionValues)
+        const savedOptionValues = await this.optionValueRepository.createMany(optionValues, tx)
         savedOptionValues.forEach(ov => existingValuesMap.set(ov.value, ov.id))
       }
 
@@ -156,14 +184,14 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
           const optionValueIdsToDelete = optionValuesToDelete.map(ov => ov.id)
           
           // QUAN TRỌNG: Xóa liên kết ProductVariantOptionValue TRƯỚC
-          await this.productVariantOptionValueRepository.deleteByOptionValueIds(optionValueIdsToDelete)
+          await this.productVariantOptionValueRepository.deleteByOptionValueIds(optionValueIdsToDelete, tx)
           
           // Sau đó mới xóa option values
-          await this.optionValueRepository.deleteByIds(optionValueIdsToDelete)
+          await this.optionValueRepository.deleteByIds(optionValueIdsToDelete, tx)
         }
         
         // Xóa options
-        await this.optionRepository.deleteByIds(optionIdsToDelete)
+        await this.optionRepository.deleteByIds(optionIdsToDelete, tx)
       }
       
       // Xử lý option values bị bỏ trong các options còn lại
@@ -182,10 +210,10 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
             const optionValueIdsToDelete = valuesToDelete.map(ov => ov.id)
             
             // QUAN TRỌNG: Xóa liên kết ProductVariantOptionValue TRƯỚC
-            await this.productVariantOptionValueRepository.deleteByOptionValueIds(optionValueIdsToDelete)
+            await this.productVariantOptionValueRepository.deleteByOptionValueIds(optionValueIdsToDelete, tx)
             
             // Sau đó mới xóa option values
-            await this.optionValueRepository.deleteByIds(optionValueIdsToDelete)
+            await this.optionValueRepository.deleteByIds(optionValueIdsToDelete, tx)
           }
         }
       }
@@ -217,10 +245,10 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
     // 6. Soft delete variants bị loại bỏ
     if (variantsToDelete.length > 0) {
       const idsToDelete = variantsToDelete.map(v => v.id)
-      await this.productVariantRepository.softDeleteByIds(idsToDelete)
+      await this.productVariantRepository.softDeleteByIds(idsToDelete, tx)
       
       // Xóa liên kết ProductVariantOptionValue
-      await this.productVariantOptionValueRepository.deleteByVariantIds(idsToDelete)
+      await this.productVariantOptionValueRepository.deleteByVariantIds(idsToDelete, tx)
     }
 
     // 7. Update variants có id
@@ -239,7 +267,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
         }
       })
       
-      await this.productVariantRepository.updateMany(variantEntities)
+      await this.productVariantRepository.updateMany(variantEntities, tx)
     }
 
     // 8. Tạo variants mới
@@ -256,7 +284,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
         })
       )
       
-      await this.productVariantRepository.createMany(variantEntities)
+      await this.productVariantRepository.createMany(variantEntities, tx)
       newVariantEntities.push(...variantEntities)
       
       // Tạo liên kết ProductVariantOptionValue cho variants mới
@@ -278,30 +306,10 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
       }
       
       if (newVariantOptionValues.length > 0) {
-        await this.productVariantOptionValueRepository.createMany(newVariantOptionValues)
+        await this.productVariantOptionValueRepository.createMany(newVariantOptionValues, tx)
       }
     }
 
-    // 9. Chuẩn bị data để emit sang inventory service
-    const stockUpdates = variantsToUpdate.map((v: any) => ({
-      productVariantId: v.id,
-      stock: v.stock,
-    }))
-
-    const variantsToCreateData = newVariantEntities.map((variant, index) => ({
-      productId,
-      productVariantId: variant.id,
-      stock: variantsToCreate[index].stock,
-      shopId, // Lấy shopId từ product
-    }))
-
-    const variantsToDeleteIds = variantsToDelete.map(v => v.id)
-
-    // 10. Bắn event
-    this.eventBus.publish(new ProductUpdatedEvent({
-      stockUpdates,
-      variantsToCreate: variantsToCreateData,
-      variantsToDelete: variantsToDeleteIds,
-    }))
+    return { variantsToUpdate, newVariantEntities, variantsToCreate, variantsToDelete }
   }
 }

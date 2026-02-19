@@ -1,5 +1,6 @@
 export interface ProductSearchDocument {
   id: string
+  shopId: string
   sku: string
   name: string
   main_image: string

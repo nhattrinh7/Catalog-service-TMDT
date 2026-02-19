@@ -27,6 +27,12 @@ import { RejectProductHandler } from './commands/reject-product/reject-product.c
 import { HideProductHandler } from './commands/hide-product/hide-product.command.handler'
 import { UnhideProductHandler } from './commands/unhide-product/unhide-product.command.handler'
 import { SoftDeleteProductHandler } from './commands/soft-delete-product/soft-delete-product.command.handler'
+import { GetProductReviewsPaginatedHandler } from './queries/get-product-reviews-paginated/get-product-reviews-paginated.query.handler'
+import { GetProductToSoldHandler } from './queries/get-product-to-sold/get-product-to-sold.query.handler'
+import { GetVariantInfoHandler } from './queries/get-variant-info/get-variant-info.query.handler'
+import { GetProductsWithLevel1CategoriesHandler } from './queries/get-products-with-level1-categories/get-products-with-level1-categories.query.handler'
+import { GetVariantsBatchHandler } from './queries/get-variants-batch/get-variants-batch.query.handler'
+import { GetDescendantCategoryIdsHandler } from './queries/get-descendant-category-ids/get-descendant-category-ids.query.handler'
 
 const CommandHandlers = [
   CreateCategoryHandler,
@@ -53,6 +59,12 @@ const QueryHandlers = [
   GetBrandsPaginatedHandler,
   GetRootCategoriesHandler,
   GetProductsPaginatedHandler,
+  GetProductReviewsPaginatedHandler,
+  GetProductToSoldHandler,
+  GetVariantInfoHandler,
+  GetProductsWithLevel1CategoriesHandler,
+  GetVariantsBatchHandler,
+  GetDescendantCategoryIdsHandler,
 ]
 
 const EventHandlers = [
