@@ -21,9 +21,8 @@ export class GetVariantInfoConsumer extends BaseRetryConsumer {
     @Payload() data: GetVariantInfoPayload,
     @Ctx() context: RmqContext,
   ) {
-    console.log('Event get.variant.info received:', data)
-
     const result = await this.handleWithRetry(context, async () => {
+      this.logger.log(`Event get.variant.info received, variantId=${data.productVariantId}`)
       return await this.queryBus.execute(new GetVariantInfoQuery(data.productVariantId))
     })
 

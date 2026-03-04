@@ -33,6 +33,7 @@ import { GetVariantInfoHandler } from './queries/get-variant-info/get-variant-in
 import { GetProductsWithLevel1CategoriesHandler } from './queries/get-products-with-level1-categories/get-products-with-level1-categories.query.handler'
 import { GetVariantsBatchHandler } from './queries/get-variants-batch/get-variants-batch.query.handler'
 import { GetDescendantCategoryIdsHandler } from './queries/get-descendant-category-ids/get-descendant-category-ids.query.handler'
+import { SagaValidateItemsHandler } from './commands/saga-validate-items/saga-validate-items.command.handler'
 
 const CommandHandlers = [
   CreateCategoryHandler,
@@ -49,6 +50,7 @@ const CommandHandlers = [
   HideProductHandler,
   UnhideProductHandler,
   SoftDeleteProductHandler,
+  SagaValidateItemsHandler,
 ]
 
 const QueryHandlers = [

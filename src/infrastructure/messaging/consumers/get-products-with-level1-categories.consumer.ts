@@ -21,9 +21,8 @@ export class GetProductsWithLevel1CategoriesConsumer extends BaseRetryConsumer {
     @Payload() data: GetProductsWithLevel1CategoriesPayload,
     @Ctx() context: RmqContext,
   ) {
-    console.log('Event get.products.with.level1.categories received:', data)
-
     const result = await this.handleWithRetry(context, async () => {
+      this.logger.log(`Event get.products.with.level1.categories received, count=${data.productIds.length}`)
       return await this.queryBus.execute(new GetProductsWithLevel1CategoriesQuery(data.productIds))
     })
 

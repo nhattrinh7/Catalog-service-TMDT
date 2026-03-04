@@ -21,9 +21,8 @@ export class GetVariantsBatchConsumer extends BaseRetryConsumer {
     @Payload() data: GetVariantsBatchPayload,
     @Ctx() context: RmqContext,
   ) {
-    console.log('Event get.variants.batch received:', data)
-
     const result = await this.handleWithRetry(context, async () => {
+      this.logger.log(`Event get.variants.batch received, count=${data.productVariantIds.length}`)
       return await this.queryBus.execute(new GetVariantsBatchQuery(data.productVariantIds))
     })
 

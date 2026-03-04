@@ -21,9 +21,8 @@ export class GetDescendantCategoryIdsConsumer extends BaseRetryConsumer {
     @Payload() data: GetDescendantCategoryIdsPayload,
     @Ctx() context: RmqContext,
   ) {
-    console.log('Event get.descendant.category.ids received:', data)
-
     const result = await this.handleWithRetry(context, async () => {
+      this.logger.log(`Event get.descendant.category.ids received, count=${data.categoryIds.length}`)
       return await this.queryBus.execute(new GetDescendantCategoryIdsQuery(data.categoryIds))
     })
 

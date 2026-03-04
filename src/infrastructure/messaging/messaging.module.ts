@@ -7,6 +7,7 @@ import { GetVariantInfoConsumer } from '~/infrastructure/messaging/consumers/get
 import { GetProductsWithLevel1CategoriesConsumer } from '~/infrastructure/messaging/consumers/get-products-with-level1-categories.consumer'
 import { GetVariantsBatchConsumer } from '~/infrastructure/messaging/consumers/get-variants-batch.consumer'
 import { GetDescendantCategoryIdsConsumer } from '~/infrastructure/messaging/consumers/get-descendant-category-ids.consumer'
+import { SagaValidateItemsConsumer } from '~/infrastructure/messaging/consumers/saga-validate-items.consumer'
 
 @Module({
   imports: [
@@ -48,6 +49,15 @@ import { GetDescendantCategoryIdsConsumer } from '~/infrastructure/messaging/con
           persistent: true,
         },
       },
+      {
+        name: 'SAGA_CLIENT',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://admin:admin123@localhost:5672'],
+          queue: 'saga_queue',
+          persistent: true,
+        },
+      },
     ]),
   ],
   providers: [
@@ -61,6 +71,7 @@ import { GetDescendantCategoryIdsConsumer } from '~/infrastructure/messaging/con
     GetProductsWithLevel1CategoriesConsumer,
     GetVariantsBatchConsumer,
     GetDescendantCategoryIdsConsumer,
+    SagaValidateItemsConsumer,
   ],
   exports: [ClientsModule, MESSAGE_PUBLISHER],
 })

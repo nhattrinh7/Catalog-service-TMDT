@@ -1,4 +1,5 @@
 export interface IMessagePublisher {
+  emitToSagaOrchestrator<T>(pattern: string, event: T): void
   emitToInventoryService<T>(pattern: string, event: T): void
   sendToInventoryService<T, R = any>(pattern: string, data: T): Promise<R>
   sendToUserService<T, R = any>(pattern: string, data: T): Promise<R>
