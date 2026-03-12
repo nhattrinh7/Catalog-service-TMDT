@@ -1,8 +1,10 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { UpdateProductCommand } from '~/application/commands/update-product/update-product.command'
 import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
 import { Inject, NotFoundException } from '@nestjs/common'
 import { type IProductVariantRepository, PRODUCT_VARIANT_REPOSITORY } from '~/domain/repositories/product-variant.repository.interface'
+import { CACHE_EVENT, CACHE_RESOURCE, CACHE_TYPE } from '~/common/constants/cache.constant'
 import { ProductUpdatedEvent } from '~/domain/events/product-updated.event'
 import { OPTION_REPOSITORY, type IOptionRepository } from '~/domain/repositories/option.repository.interface'
 import { OPTION_VALUE_REPOSITORY, type IOptionValueRepository } from '~/domain/repositories/option-value.repository.interface'
@@ -36,6 +38,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
     private readonly messagePublisher: IMessagePublisher,
     private readonly eventBus: EventBus,
     private readonly prismaService: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: UpdateProductCommand) {
@@ -121,6 +124,9 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
       variantsToCreate: variantsToCreateData,
       variantsToDelete: variantsToDeleteIds,
     }))
+
+    // Invalidate cache product detail
+    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, { type: CACHE_TYPE.DETAIL, resource: CACHE_RESOURCE.PRODUCTS, id })
   }
 
   /**

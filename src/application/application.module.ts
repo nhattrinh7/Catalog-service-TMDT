@@ -34,6 +34,8 @@ import { GetProductsWithLevel1CategoriesHandler } from './queries/get-products-w
 import { GetVariantsBatchHandler } from './queries/get-variants-batch/get-variants-batch.query.handler'
 import { GetDescendantCategoryIdsHandler } from './queries/get-descendant-category-ids/get-descendant-category-ids.query.handler'
 import { SagaValidateItemsHandler } from './commands/saga-validate-items/saga-validate-items.command.handler'
+import { CreateProductReviewHandler } from './commands/create-product-review/create-product-review.command.handler'
+import { CreateReviewReportHandler } from './commands/create-review-report/create-review-report.command.handler'
 
 const CommandHandlers = [
   CreateCategoryHandler,
@@ -51,6 +53,8 @@ const CommandHandlers = [
   UnhideProductHandler,
   SoftDeleteProductHandler,
   SagaValidateItemsHandler,
+  CreateProductReviewHandler,
+  CreateReviewReportHandler,
 ]
 
 const QueryHandlers = [

@@ -15,6 +15,7 @@ import {
   Put,
   Delete,
 } from '@nestjs/common'
+import { CacheTTL } from '@nestjs/cache-manager'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { CreateProductCommand } from '~/application/commands/create-product/create-product.command'
@@ -29,10 +30,14 @@ import { SoftDeleteProductCommand } from '~/application/commands/soft-delete-pro
 import { GetProductWithVariantsQuery } from '~/application/queries/get-product-with-variants/get-product-with-variants.query'
 import { GetShopProductsPaginatedQuery } from '~/application/queries/get-shop-products-paginated/get-shop-products-paginated.query'
 import { GetProductsPaginatedQuery } from '~/application/queries/get-products-paginated/get-products-paginated.query'
-import { GetProductReviewsPaginatedQuery } from '~/application/queries/get-product-reviews-paginated/get-product-reviews-paginated.query'
+
 import { GetProductToSoldQuery } from '~/application/queries/get-product-to-sold/get-product-to-sold.query'
 import { CreateProductBodyDto, GetProductsPaginatedQueryDto, UpdateProductBodyDto } from '~/presentation/dtos/product.dto'
-import { GetProductReviewsPaginatedQueryDto } from '~/presentation/dtos/product-review.dto'
+
+import { CustomCacheInterceptor } from '~/infrastructure/cache/custom-cache.interceptor'
+import { CacheType } from '~/infrastructure/cache/cache-type.decorator'
+import { CacheResource } from '~/infrastructure/cache/cache-prefix.decorator'
+import { CACHE_TYPE, CACHE_RESOURCE } from '~/common/constants/cache.constant'
 
 @Controller('v1/products')
 export class ProductController {
@@ -107,6 +112,10 @@ export class ProductController {
   }
 
   @Get('/:id')
+  @UseInterceptors(CustomCacheInterceptor)
+  @CacheType(CACHE_TYPE.DETAIL)
+  @CacheResource(CACHE_RESOURCE.PRODUCTS)
+  @CacheTTL(300_000) // 5 phút
   async getProductDetail(
     @Param('id') id: string,
   ): Promise<any> {
@@ -189,22 +198,7 @@ export class ProductController {
     return { message: 'Reject product successful' }
   }
 
-  // ***PUBLIC***
-  @Get('/:id/reviews')
-  async getProductReviewPaginated(
-    @Query() query: GetProductReviewsPaginatedQueryDto,
-    @Param('id') id: string,
-  ): Promise<{ message: string, data: any }> {
-    const result = await this.queryBus.execute(new GetProductReviewsPaginatedQuery(
-      id,
-      query.page,
-      query.limit,
-      query.rating,
-      query.hasMedia,
-    ))
 
-    return { message: 'Get product reviews paginated successful', data: result}
-  }
 
   @Get('/:id/to-sold')
   async getProductToSold(

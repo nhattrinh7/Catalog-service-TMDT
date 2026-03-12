@@ -44,6 +44,10 @@ export interface IProductRepository {
     hasMedia?: boolean
   }): Promise<PaginatedResult<ProductReview>>
 
+  createReview(review: ProductReview, tx?: any): Promise<ProductReview>
+
+  updateRating(productId: string, ratingAvg: number, ratingCount: number, tx?: any): Promise<void>
+
   countProductAmountByShopId(shopId: string): Promise<number>
 
   findProductsWithLevel1Categories(productIds: string[]): Promise<ProductWithLevel1Category[]>

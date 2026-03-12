@@ -7,6 +7,7 @@ import { PRODUCT_VARIANT_REPOSITORY } from '~/domain/repositories/product-varian
 import { OPTION_REPOSITORY } from '~/domain/repositories/option.repository.interface'
 import { OPTION_VALUE_REPOSITORY } from '~/domain/repositories/option-value.repository.interface'
 import { PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY } from '~/domain/repositories/product-variant-option-value.repository.interface'
+import { REVIEW_REPORT_REPOSITORY } from '~/domain/repositories/review-report.repository.interface'
 import { BrandRepository } from '~/infrastructure/database/repositories/brand.repository'
 import { CategoryRepository } from '~/infrastructure/database/repositories/category.repository'
 import { ProductRepository } from '~/infrastructure/database/repositories/product.repository'
@@ -14,6 +15,7 @@ import { ProductVariantRepository } from '~/infrastructure/database/repositories
 import { OptionRepository } from '~/infrastructure/database/repositories/option.repository'
 import { OptionValueRepository } from '~/infrastructure/database/repositories/option-value.repository'
 import { ProductVariantOptionValueRepository } from '~/infrastructure/database/repositories/product-variant-option-value.repository'
+import { ReviewReportRepository } from '~/infrastructure/database/repositories/review-report.repository'
 import { CqrsModule } from '@nestjs/cqrs'
 
 @Module({
@@ -48,6 +50,10 @@ import { CqrsModule } from '@nestjs/cqrs'
       provide: PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY,
       useClass: ProductVariantOptionValueRepository,
     },
+    {
+      provide: REVIEW_REPORT_REPOSITORY,
+      useClass: ReviewReportRepository,
+    },
   ],
   exports: [
     PrismaService,
@@ -58,6 +64,7 @@ import { CqrsModule } from '@nestjs/cqrs'
     OPTION_REPOSITORY,
     OPTION_VALUE_REPOSITORY,
     PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY,
+    REVIEW_REPORT_REPOSITORY,
   ],
 })
 export class DatabaseModule {}

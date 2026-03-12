@@ -459,4 +459,25 @@ export class ProductRepository implements IProductRepository {
       currentCategoryId = category.parentId
     }
   }
+
+  async createReview(review: ProductReview, tx?: any): Promise<ProductReview> {
+    const client = tx ?? this.prisma
+    const data = ProductReviewMapper.toPersistence(review)
+
+    const created = await client.productReview.create({ data })
+
+    return ProductReviewMapper.toDomain(created)
+  }
+
+  async updateRating(productId: string, ratingAvg: number, ratingCount: number, tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+
+    await client.product.update({
+      where: { id: productId },
+      data: {
+        ratingAvg,
+        ratingCount,
+      },
+    })
+  }
 }

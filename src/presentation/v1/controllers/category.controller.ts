@@ -1,19 +1,22 @@
 import {
   Controller,
   Param,
-  Patch,
-  Headers,
   Body,
   Post,
   Get,
+  UseInterceptors,
 } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
+import { CacheTTL } from '@nestjs/cache-manager'
 import { CreateCategoryCommand } from '~/application/commands/create-category/create-category.command'
 import { GetCategoriesQuery } from '~/application/queries/get-categories/get-categories.query'
 import { GetCategoryQuery } from '~/application/queries/get-category/get-category.query'
 import { GetRootCategoriesQuery } from '~/application/queries/get-root-categories/get-root-categories.query'
 import { CreateCategoryBodyDto } from '~/presentation/dtos/category.dto'
-
+import { CustomCacheInterceptor } from '~/infrastructure/cache/custom-cache.interceptor'
+import { CacheType } from '~/infrastructure/cache/cache-type.decorator'
+import { CacheResource } from '~/infrastructure/cache/cache-prefix.decorator'
+import { CACHE_TYPE, CACHE_RESOURCE } from '~/common/constants/cache.constant'
 
 @Controller('v1/categories')
 export class CategoryController {
@@ -30,6 +33,10 @@ export class CategoryController {
   }
 
   @Get('/')
+  @UseInterceptors(CustomCacheInterceptor)
+  @CacheType(CACHE_TYPE.LIST)
+  @CacheResource(CACHE_RESOURCE.CATEGORIES)
+  @CacheTTL(3_600_000) // 1 giờ
   async getCategories(): Promise<any> {
     const categories = await this.queryBus.execute(new GetCategoriesQuery())
 
@@ -37,6 +44,10 @@ export class CategoryController {
   }
 
   @Get('/root')
+  @UseInterceptors(CustomCacheInterceptor)
+  @CacheType(CACHE_TYPE.LIST)
+  @CacheResource(CACHE_RESOURCE.CATEGORIES_ROOT)
+  @CacheTTL(3_600_000) // 1 giờ
   async getRootCategories(): Promise<any> {
     const categories = await this.queryBus.execute(new GetRootCategoriesQuery())
 
@@ -44,6 +55,10 @@ export class CategoryController {
   }
 
   @Get('/:id')
+  @UseInterceptors(CustomCacheInterceptor)
+  @CacheType(CACHE_TYPE.DETAIL)
+  @CacheResource(CACHE_RESOURCE.CATEGORIES)
+  @CacheTTL(3_600_000) // 1 giờ
   async getCategory(
     @Param('id') id: string
   ): Promise<any> {

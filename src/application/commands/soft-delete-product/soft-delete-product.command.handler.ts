@@ -1,10 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { Inject, NotFoundException } from '@nestjs/common'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { SoftDeleteProductCommand } from './soft-delete-product.command'
 import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
 import { PRODUCT_VARIANT_REPOSITORY, type IProductVariantRepository } from '~/domain/repositories/product-variant.repository.interface'
 import { PRODUCT_SEARCH_REPOSITORY, type IProductSearchRepository } from '~/domain/repositories/product-search.repository.interface'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
+import { CACHE_EVENT, CACHE_RESOURCE, CACHE_TYPE } from '~/common/constants/cache.constant'
 
 @CommandHandler(SoftDeleteProductCommand)
 export class SoftDeleteProductHandler implements ICommandHandler<SoftDeleteProductCommand> {
@@ -16,6 +18,7 @@ export class SoftDeleteProductHandler implements ICommandHandler<SoftDeleteProdu
     @Inject(PRODUCT_SEARCH_REPOSITORY)
     private readonly productSearchRepository: IProductSearchRepository,
     private readonly prismaService: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: SoftDeleteProductCommand): Promise<void> {
@@ -50,5 +53,8 @@ export class SoftDeleteProductHandler implements ICommandHandler<SoftDeleteProdu
     if (product.approveStatus === 'ACCEPTED') {
       await this.productSearchRepository.deleteProduct(productId)
     }
+
+    // Invalidate cache product detail
+    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, { type: CACHE_TYPE.DETAIL, resource: CACHE_RESOURCE.PRODUCTS, id: productId })
   }
 }

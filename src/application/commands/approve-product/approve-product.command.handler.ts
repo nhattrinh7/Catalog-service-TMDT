@@ -2,10 +2,12 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { ApproveProductCommand } from '~/application/commands/approve-product/approve-product.command'
 import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
 import { Inject, NotFoundException } from '@nestjs/common'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { PRODUCT_VARIANT_REPOSITORY, type IProductVariantRepository } from '~/domain/repositories/product-variant.repository.interface'
 import { CATEGORY_REPOSITORY, type ICategoryRepository } from '~/domain/repositories/category.repository.interface'
 import { PRODUCT_SEARCH_REPOSITORY, type IProductSearchRepository } from '~/domain/repositories/product-search.repository.interface'
 import { ProductSearchMapper } from '~/infrastructure/elasticsearch/mappers/product-search.mapper'
+import { CACHE_EVENT, CACHE_RESOURCE, CACHE_TYPE } from '~/common/constants/cache.constant'
 
 @CommandHandler(ApproveProductCommand)
 export class ApproveProductHandler implements ICommandHandler<ApproveProductCommand, void> {
@@ -18,6 +20,7 @@ export class ApproveProductHandler implements ICommandHandler<ApproveProductComm
     private readonly categoryRepository: ICategoryRepository,
     @Inject(PRODUCT_SEARCH_REPOSITORY)
     private readonly productSearchRepository: IProductSearchRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(command: ApproveProductCommand) {
@@ -52,5 +55,8 @@ export class ApproveProductHandler implements ICommandHandler<ApproveProductComm
     )
     // Index vào Elasticsearch
     await this.productSearchRepository.indexProduct(productSearchDocument)
+
+    // Invalidate cache product detail
+    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, { type: CACHE_TYPE.DETAIL, resource: CACHE_RESOURCE.PRODUCTS, id })
   }
 }

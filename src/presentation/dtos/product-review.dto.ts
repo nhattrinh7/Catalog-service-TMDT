@@ -32,3 +32,13 @@ export const GetProductReviewsPaginatedQuerySchema = z.object({
   
 })
 export class GetProductReviewsPaginatedQueryDto extends createZodDto(GetProductReviewsPaginatedQuerySchema) {}
+
+export const CreateProductReviewBodySchema = z.object({
+  orderId: z.uuid(),
+  sku: z.string().max(30),
+  rating: z.number().int().min(1).max(5),
+  content: z.string().optional(),
+  images: z.array(z.url()).max(3).optional(),
+  video: z.url().optional(),
+})
+export class CreateProductReviewBodyDto extends createZodDto(CreateProductReviewBodySchema) {}

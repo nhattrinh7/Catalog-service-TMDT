@@ -105,8 +105,54 @@ model ProductReview {
   createdAt     DateTime  @default(now()) @map("created_at")
   
   product       Product   @relation(fields: [productId], references: [id])
+  reply         ReviewReply?
+  reports       ReviewReport[]
 
   @@map("product_reviews")
+}
+
+model ReviewReply {
+  id          String   @id @db.Uuid
+  reviewId    String   @unique @map("review_id") @db.Uuid
+  sellerId    String   @map("seller_id") @db.Uuid
+  content     String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  review      ProductReview @relation(fields: [reviewId], references: [id])
+
+  @@map("review_replies")
+}
+
+model ReviewReport {
+  id          String             @id @db.Uuid
+  reviewId    String             @map("review_id") @db.Uuid
+  reporterId  String             @map("reporter_id") @db.Uuid
+  reason      ReviewReportReason
+  description String?            @db.Text
+  status      ReviewReportStatus @default(PENDING)
+  createdAt   DateTime           @default(now()) @map("created_at")
+
+  review      ProductReview      @relation(fields: [reviewId], references: [id])
+
+  @@unique([reviewId, reporterId])
+  @@map("review_reports")
+}
+
+enum ReviewReportReason {
+  VULGAR
+  ADULT_CONTENT
+  SPAM
+  PERSONAL_INFO
+  ILLEGAL_ADVERTISING
+  FALSE_INFORMATION
+  OTHER
+}
+
+enum ReviewReportStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 model Option {
