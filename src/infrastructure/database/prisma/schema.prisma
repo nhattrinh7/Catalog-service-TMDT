@@ -93,7 +93,7 @@ model ProductReview {
   id            String    @id @db.Uuid
   productId     String    @map("product_id") @db.Uuid
   userId        String    @map("user_id") @db.Uuid
-  orderId       String    @unique @map("order_id") @db.Uuid
+  orderId       String    @map("order_id") @db.Uuid
   sku           String    @db.VarChar(30)              // Xanh Blue
   rating        Int                                    // 1-5 sao
   content       String?   @db.Text                     // nullable vì có thể chỉ chấm sao
@@ -108,13 +108,14 @@ model ProductReview {
   reply         ReviewReply?
   reports       ReviewReport[]
 
+  @@unique([orderId, productId])
   @@map("product_reviews")
 }
 
 model ReviewReply {
   id          String   @id @db.Uuid
   reviewId    String   @unique @map("review_id") @db.Uuid
-  sellerId    String   @map("seller_id") @db.Uuid
+  shopId      String   @map("shop_id") @db.Uuid
   content     String   @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

@@ -36,6 +36,7 @@ import { GetDescendantCategoryIdsHandler } from './queries/get-descendant-catego
 import { SagaValidateItemsHandler } from './commands/saga-validate-items/saga-validate-items.command.handler'
 import { CreateProductReviewHandler } from './commands/create-product-review/create-product-review.command.handler'
 import { CreateReviewReportHandler } from './commands/create-review-report/create-review-report.command.handler'
+import { GetReviewedOrderItemsHandler } from './queries/get-reviewed-order-items/get-reviewed-order-items.query.handler'
 
 const CommandHandlers = [
   CreateCategoryHandler,
@@ -71,6 +72,7 @@ const QueryHandlers = [
   GetProductsWithLevel1CategoriesHandler,
   GetVariantsBatchHandler,
   GetDescendantCategoryIdsHandler,
+  GetReviewedOrderItemsHandler,
 ]
 
 const EventHandlers = [

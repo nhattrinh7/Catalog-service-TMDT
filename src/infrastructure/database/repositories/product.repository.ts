@@ -397,6 +397,36 @@ export class ProductRepository implements IProductRepository {
     }
   }
 
+  async findReviewedOrderItems(params: {
+    items: Array<{ orderId: string; productId: string }>
+  }): Promise<Array<{ orderId: string; productId: string }>> {
+    const { items } = params
+    if (items.length === 0) return []
+
+    const reviews = await this.prisma.productReview.findMany({
+      where: {
+        OR: items.map((item) => ({
+          orderId: item.orderId,
+          productId: item.productId,
+        })),
+      },
+      select: {
+        orderId: true,
+        productId: true,
+      },
+    })
+
+    const unique = new Map<string, { orderId: string; productId: string }>()
+    for (const review of reviews) {
+      const key = `${review.orderId}:${review.productId}`
+      if (!unique.has(key)) {
+        unique.set(key, { orderId: review.orderId, productId: review.productId })
+      }
+    }
+
+    return Array.from(unique.values())
+  }
+
   async countProductAmountByShopId(shopId: string): Promise<number> {
     return await this.prisma.product.count({
       where: {

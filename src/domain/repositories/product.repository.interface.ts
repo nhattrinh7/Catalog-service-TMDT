@@ -51,6 +51,10 @@ export interface IProductRepository {
   countProductAmountByShopId(shopId: string): Promise<number>
 
   findProductsWithLevel1Categories(productIds: string[]): Promise<ProductWithLevel1Category[]>
+
+  findReviewedOrderItems(params: {
+    items: Array<{ orderId: string; productId: string }>
+  }): Promise<Array<{ orderId: string; productId: string }>>
 }
 export const PRODUCT_REPOSITORY = Symbol('IProductRepository')
 
