@@ -18,6 +18,8 @@ export class CreateReviewReportHandler implements ICommandHandler<CreateReviewRe
     const report = ReviewReport.create({
       reviewId,
       reporterId,
+      reporterUsername: body.reporterUsername,
+      reporterAvatar: body.reporterAvatar,
       reason: body.reason,
       description: body.description,
     })

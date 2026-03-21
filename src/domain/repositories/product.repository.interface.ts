@@ -1,12 +1,33 @@
 import { Product } from "~/domain/entities/product.entity"
 import { ProductReview } from "~/domain/entities/product-review.entity"
 import { IProductWithVariants } from "~/domain/interfaces/product.interface"
+import { ReviewReportReason } from "~/domain/enums/review-report.enum"
 import { PaginatedResult } from "~/domain/types/pagination.types"
 
 export interface ProductWithLevel1Category {
   productId: string
   categoryId: string
   level1CategoryId: string
+}
+
+export interface ReportedReviewItem {
+  id: string
+  buyerUsername: string
+  buyerAvatar: string | null
+  productName: string
+  productImage: string
+  sku: string
+  rating: number
+  images: string[]
+  video: string | null
+  createdAt: Date
+  report: {
+    reporterUsername: string
+    reporterAvatar: string | null
+    reason: ReviewReportReason
+    description: string | null
+    createdAt: Date
+  }
 }
 
 export interface IProductRepository {
@@ -43,6 +64,32 @@ export interface IProductRepository {
     rating?: string
     hasMedia?: boolean
   }): Promise<PaginatedResult<ProductReview>>
+
+  // Lấy reviews theo shop (phục vụ quản lý đánh giá)
+  findShopReviewsPaginated(params: {
+    shopId: string
+    page: number
+    limit: number
+    ratings?: number[]
+    search?: string
+    startDate?: string
+    endDate?: string
+  }): Promise<PaginatedResult<ProductReview>>
+
+  findReviewById(reviewId: string): Promise<{ id: string; shopId: string } | null>
+
+  findReportedReviewsPaginated(params: {
+    page: number
+    limit: number
+    isHidden?: boolean
+  }): Promise<PaginatedResult<ReportedReviewItem>>
+
+  hideReview(reviewId: string, hiddenReason?: string | null, hiddenAt?: Date | null, tx?: any): Promise<void>
+
+  existsReviewByOrderAndProduct(params: {
+    orderId: string
+    productId: string
+  }): Promise<boolean>
 
   createReview(review: ProductReview, tx?: any): Promise<ProductReview>
 

@@ -4,6 +4,7 @@ import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositori
 import { MESSAGE_PUBLISHER, type IMessagePublisher } from '~/domain/contracts/message-publisher.interface'
 import { GetProductReviewsPaginatedQuery } from '~/application/queries/get-product-reviews-paginated/get-product-reviews-paginated.query'
 import { ProductReview } from '~/domain/entities/product-review.entity'
+import { REVIEW_REPLY_REPOSITORY, type IReviewReplyRepository } from '~/domain/repositories/review-reply.repository.interface'
 
 interface UserInfo {
   id: string
@@ -13,6 +14,10 @@ interface UserInfo {
 
 interface ProductReviewWithUser extends Omit<ProductReview, 'userId'> {
   user: UserInfo
+  reply: {
+    content: string
+    createdAt: Date
+  } | null
 }
 
 interface GetProductReviewsPaginatedResponse {
@@ -34,6 +39,8 @@ export class GetProductReviewsPaginatedHandler
     private readonly productRepository: IProductRepository,
     @Inject(MESSAGE_PUBLISHER)
     private readonly messagePublisher: IMessagePublisher,
+    @Inject(REVIEW_REPLY_REPOSITORY)
+    private readonly reviewReplyRepository: IReviewReplyRepository,
   ) {}
 
   async execute(query: GetProductReviewsPaginatedQuery): Promise<GetProductReviewsPaginatedResponse> {
@@ -69,12 +76,22 @@ export class GetProductReviewsPaginatedHandler
     // Tạo map để lookup user nhanh
     const userMap = new Map(users.map(user => [user.id, user]))
 
+    const reviewIds = reviews.map((review) => review.id)
+    const replies = await this.reviewReplyRepository.findByReviewIds(reviewIds)
+    const replyMap = new Map(replies.map((reply) => [reply.reviewId, reply]))
+
     // 4. Ghép thông tin user vào từng review
     const reviewsWithUser: ProductReviewWithUser[] = reviews.map(review => {
       const { userId, ...reviewWithoutUserId } = review
       return {
         ...reviewWithoutUserId,
         user: userMap.get(userId) || { id: userId, username: 'unknown', avatar: null },
+        reply: replyMap.has(review.id)
+          ? {
+              content: replyMap.get(review.id)!.content,
+              createdAt: replyMap.get(review.id)!.createdAt,
+            }
+          : null,
       }
     })
 

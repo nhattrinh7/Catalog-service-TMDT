@@ -9,6 +9,8 @@ import { GetVariantsBatchConsumer } from '~/infrastructure/messaging/consumers/g
 import { GetDescendantCategoryIdsConsumer } from '~/infrastructure/messaging/consumers/get-descendant-category-ids.consumer'
 import { SagaValidateItemsConsumer } from '~/infrastructure/messaging/consumers/saga-validate-items.consumer'
 import { GetReviewedOrderItemsConsumer } from '~/infrastructure/messaging/consumers/get-reviewed-order-items.consumer'
+import { SagaIncreaseBuyCountConsumer } from '~/infrastructure/messaging/consumers/saga-increase-buy-count.consumer'
+import { OrderDecreaseBuyCountConsumer } from '~/infrastructure/messaging/consumers/order-decrease-buy-count.consumer'
 
 @Module({
   imports: [
@@ -74,6 +76,8 @@ import { GetReviewedOrderItemsConsumer } from '~/infrastructure/messaging/consum
     GetDescendantCategoryIdsConsumer,
     SagaValidateItemsConsumer,
     GetReviewedOrderItemsConsumer,
+    SagaIncreaseBuyCountConsumer,
+    OrderDecreaseBuyCountConsumer,
   ],
   exports: [ClientsModule, MESSAGE_PUBLISHER],
 })

@@ -92,8 +92,13 @@ model ProductVariant {
 model ProductReview {
   id            String    @id @db.Uuid
   productId     String    @map("product_id") @db.Uuid
+  shopId        String    @map("shop_id") @db.Uuid
   userId        String    @map("user_id") @db.Uuid
   orderId       String    @map("order_id") @db.Uuid
+  buyerUsername String    @default("") @map("buyer_username") @db.VarChar(100)
+  buyerAvatar   String?   @map("buyer_avatar") @db.Text
+  productName   String    @default("") @map("product_name") @db.VarChar(255)
+  productImage  String    @default("") @map("product_image") @db.Text
   sku           String    @db.VarChar(30)              // Xanh Blue
   rating        Int                                    // 1-5 sao
   content       String?   @db.Text                     // nullable vì có thể chỉ chấm sao
@@ -129,6 +134,8 @@ model ReviewReport {
   id          String             @id @db.Uuid
   reviewId    String             @map("review_id") @db.Uuid
   reporterId  String             @map("reporter_id") @db.Uuid
+  reporterUsername String        @default("") @map("reporter_username") @db.VarChar(100)
+  reporterAvatar   String?       @map("reporter_avatar") @db.Text
   reason      ReviewReportReason
   description String?            @db.Text
   status      ReviewReportStatus @default(PENDING)

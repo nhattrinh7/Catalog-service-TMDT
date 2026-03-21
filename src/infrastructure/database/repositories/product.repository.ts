@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+﻿import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
-import { IProductRepository, ProductWithLevel1Category } from '~/domain/repositories/product.repository.interface'
+import { IProductRepository, ProductWithLevel1Category, type ReportedReviewItem } from '~/domain/repositories/product.repository.interface'
+import { ReviewReportReason } from '~/domain/enums/review-report.enum'
 import { Product } from '~/domain/entities/product.entity'
 import { ProductReview } from '~/domain/entities/product-review.entity'
 import { ProductMapper } from '~/infrastructure/database/mappers/product.mapper'
@@ -36,19 +37,16 @@ export class ProductRepository implements IProductRepository {
     search?: string
     isActive?: boolean
     approveStatus?: string
-    shopId: string // BẮT BUỘC
+    shopId: string
   }): Promise<PaginatedResult<Product>> {
     const { page, limit, search, isActive, approveStatus, shopId } = params
 
-    // Tính offset cho pagination
     const offset = (page - 1) * limit
 
-    // Xây dựng WHERE conditions và parameters
     const conditions: string[] = []
     const queryParams: any[] = []
     let paramIndex = 1
 
-    // Filter theo search với unaccent: search 'vay' sẽ tìm được 'váy'
     if (search) {
       conditions.push(`(
         unaccent(name) ILIKE unaccent($${paramIndex}) OR 
@@ -72,20 +70,16 @@ export class ProductRepository implements IProductRepository {
       paramIndex++
     }
 
-    // Filter theo shopId (BẮT BUỘC - luôn có)
     conditions.push(`shop_id = $${paramIndex}::uuid`)
     queryParams.push(shopId)
     paramIndex++
 
-    // Filter bỏ sản phẩm đã xóa mềm
     conditions.push(`is_deleted = false`)
 
-    // Tạo WHERE clause
     const whereClause = conditions.length > 0 
       ? 'WHERE ' + conditions.join(' AND ') 
       : ''
 
-    // Query products với raw SQL sử dụng unaccent
     const productsRaw = await this.prisma.$queryRawUnsafe<any[]>(
       `
       SELECT p.*
@@ -100,14 +94,12 @@ export class ProductRepository implements IProductRepository {
       offset
     )
 
-    // Count total với raw SQL
     const totalRaw = await this.prisma.$queryRawUnsafe<any[]>(
       `SELECT COUNT(*) as count FROM products p ${whereClause}`,
       ...queryParams
     )
     const total = Number(totalRaw[0]?.count || 0)
 
-    // Load variants cho mỗi product
     const productIds = productsRaw.map(p => p.id)
     const variants = productIds.length > 0
       ? await this.prisma.productVariant.findMany({
@@ -129,7 +121,6 @@ export class ProductRepository implements IProductRepository {
       
       const product = ProductMapper.toDomain(camelCaseProduct)
       
-      // Thêm variants vào product entity
       const productVariants = variantsByProductId[prismaProduct.id] || []
       ;(product as any).variants = productVariants.map((variant) => 
         new ProductVariant(
@@ -146,7 +137,6 @@ export class ProductRepository implements IProductRepository {
       return product
     })
 
-    // Tính toán pagination metadata
     const meta = calculatePaginationMeta(total, page, limit)
 
     return {
@@ -164,7 +154,6 @@ export class ProductRepository implements IProductRepository {
   }): Promise<PaginatedResult<Product>> {
     const { page, limit, search, approveStatus, categoryIds } = params
 
-    // Nếu không có categoryIds thì trả về empty
     if (categoryIds.length === 0) {
       return {
         items: [],
@@ -172,15 +161,12 @@ export class ProductRepository implements IProductRepository {
       }
     }
 
-    // Tính offset cho pagination
     const offset = (page - 1) * limit
 
-    // Xây dựng WHERE conditions và parameters
     const conditions: string[] = []
     const queryParams: any[] = []
     let paramIndex = 1
 
-    // Filter theo search với unaccent
     if (search) {
       conditions.push(`(
         unaccent(name) ILIKE unaccent($${paramIndex}) OR 
@@ -203,15 +189,12 @@ export class ProductRepository implements IProductRepository {
     queryParams.push(...categoryIds)
     paramIndex += categoryIds.length
 
-    // Filter bỏ sản phẩm đã xóa mềm
     conditions.push(`is_deleted = false`)
 
-    // Tạo WHERE clause
     const whereClause = conditions.length > 0 
       ? 'WHERE ' + conditions.join(' AND ') 
       : ''
 
-    // Query products với raw SQL
     const productsRaw = await this.prisma.$queryRawUnsafe<any[]>(
       `
       SELECT p.*
@@ -226,14 +209,12 @@ export class ProductRepository implements IProductRepository {
       offset
     )
 
-    // Count total với raw SQL
     const totalRaw = await this.prisma.$queryRawUnsafe<any[]>(
       `SELECT COUNT(*) as count FROM products p ${whereClause}`,
       ...queryParams
     )
     const total = Number(totalRaw[0]?.count || 0)
 
-    // Load variants cho mỗi product
     const productIds = productsRaw.map(p => p.id)
     const variants = productIds.length > 0
       ? await this.prisma.productVariant.findMany({
@@ -300,7 +281,6 @@ export class ProductRepository implements IProductRepository {
       )
     )
 
-    // Lấy category name
     const category = product.category.name
     
     // Return product with variants
@@ -333,8 +313,6 @@ export class ProductRepository implements IProductRepository {
     return ProductMapper.toDomain(updatedProduct)
   }
 
-  // Implement method lấy reviews theo DDD pattern
-  // Reviews chỉ được truy cập thông qua Product aggregate root
   async findReviewsPaginated(params: {
     productId: string
     page: number
@@ -347,43 +325,34 @@ export class ProductRepository implements IProductRepository {
     // Build where clause
     const where: any = {
       productId,
-      isHidden: false, // Chỉ lấy review chưa bị ẩn
     }
 
-    // Filter theo rating nếu có
     if (rating) {
       where.rating = parseInt(rating, 10)
     }
 
-    // Filter theo hasMedia nếu có
     if (hasMedia !== undefined) {
       if (hasMedia) {
-        // Có media = có ít nhất 1 trong 2: images hoặc video
         where.OR = [
           { images: { not: Prisma.DbNull } },
           { video: { not: null } },
         ]
       } else {
-        // Không có media = cả 2 đều null
         where.images = { equals: Prisma.DbNull }
         where.video = { equals: null }
       }
     }
 
-    // Đếm tổng số review
     const total = await this.prisma.productReview.count({ where })
 
-    // Lấy danh sách review với phân trang
     const prismaReviews = await this.prisma.productReview.findMany({
       where,
       skip: (page - 1) * limit,
       take: limit,
       orderBy: {
-        createdAt: 'desc', // Review mới nhất trước
       },
     })
 
-    // Sử dụng Mapper để chuyển từ Prisma model sang Domain entity
     const items = ProductReviewMapper.toDomainArray(prismaReviews)
 
     return {
@@ -395,6 +364,163 @@ export class ProductRepository implements IProductRepository {
         totalPages: Math.ceil(total / limit),
       },
     }
+  }
+
+  async findShopReviewsPaginated(params: {
+    shopId: string
+    page: number
+    limit: number
+    ratings?: number[]
+    search?: string
+    startDate?: string
+    endDate?: string
+  }): Promise<PaginatedResult<ProductReview>> {
+    const { shopId, page, limit, ratings, search, startDate, endDate } = params
+
+    const where: Prisma.ProductReviewWhereInput = {
+      shopId,
+    }
+
+    if (ratings && ratings.length > 0) {
+      where.rating = { in: ratings }
+    }
+
+    if (search) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(search)
+
+      where.OR = [
+        ...(isUuid ? [{ orderId: { equals: search } }] : []),
+        { productName: { contains: search, mode: 'insensitive' } },
+        { buyerUsername: { contains: search, mode: 'insensitive' } },
+      ]
+    }
+
+    if (startDate || endDate) {
+      const createdAt: Prisma.DateTimeFilter = {}
+      if (startDate) createdAt.gte = new Date(`${startDate}T00:00:00`)
+      if (endDate) createdAt.lte = new Date(`${endDate}T23:59:59.999`)
+      where.createdAt = createdAt
+    }
+
+    const total = await this.prisma.productReview.count({ where })
+
+    const prismaReviews = await this.prisma.productReview.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    const items = ProductReviewMapper.toDomainArray(prismaReviews)
+
+    return {
+      items,
+      meta: calculatePaginationMeta(total, page, limit),
+    }
+  }
+
+  async findReviewById(reviewId: string): Promise<{ id: string; shopId: string } | null> {
+    return await this.prisma.productReview.findUnique({
+      where: { id: reviewId },
+      select: { id: true, shopId: true },
+    })
+  }
+
+  async findReportedReviewsPaginated(params: {
+    page: number
+    limit: number
+    isHidden?: boolean
+  }): Promise<PaginatedResult<ReportedReviewItem>> {
+    const { page, limit, isHidden } = params
+
+    const where: Prisma.ProductReviewWhereInput = {
+      isHidden: typeof isHidden === 'boolean' ? isHidden : false,
+      reports: {
+        some: {},
+      },
+    }
+
+    const total = await this.prisma.productReview.count({ where })
+
+    const prismaReviews = await this.prisma.productReview.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        reports: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+    })
+
+    const items: ReportedReviewItem[] = prismaReviews
+      .map((review) => {
+        const report = review.reports[0]
+        if (!report) return null
+
+        const images = Array.isArray(review.images) ? (review.images as string[]) : []
+
+        return {
+          id: review.id,
+          buyerUsername: review.buyerUsername,
+          buyerAvatar: review.buyerAvatar,
+          productName: review.productName,
+          productImage: review.productImage,
+          sku: review.sku,
+          rating: review.rating,
+          images,
+          video: review.video,
+          createdAt: review.createdAt,
+          report: {
+            reporterUsername: report.reporterUsername,
+            reporterAvatar: report.reporterAvatar,
+            reason: report.reason as ReviewReportReason,
+            description: report.description,
+            createdAt: report.createdAt,
+          },
+        }
+      })
+      .filter((item): item is ReportedReviewItem => item !== null)
+
+    return {
+      items,
+      meta: calculatePaginationMeta(total, page, limit),
+    }
+  }
+
+  async hideReview(reviewId: string, hiddenReason?: string | null, hiddenAt?: Date | null, tx?: any): Promise<void> {
+    const client = tx ?? this.prisma
+    await client.productReview.update({
+      where: { id: reviewId },
+      data: {
+        isHidden: true,
+        hiddenReason: hiddenReason ?? null,
+        hiddenAt: hiddenAt ?? new Date(),
+      },
+    })
+  }
+
+  async existsReviewByOrderAndProduct(params: {
+    orderId: string
+    productId: string
+  }): Promise<boolean> {
+    const review = await this.prisma.productReview.findUnique({
+      where: {
+        orderId_productId: {
+          orderId: params.orderId,
+          productId: params.productId,
+        },
+      },
+      select: { id: true },
+    })
+
+    return !!review
   }
 
   async findReviewedOrderItems(params: {
@@ -438,7 +564,6 @@ export class ProductRepository implements IProductRepository {
   }
 
   async findProductsWithLevel1Categories(productIds: string[]): Promise<ProductWithLevel1Category[]> {
-    // Lấy products với categoryId
     const products = await this.prisma.product.findMany({
       where: {
         id: { in: productIds },
@@ -450,7 +575,6 @@ export class ProductRepository implements IProductRepository {
       },
     })
 
-    // Resolve từng categoryId lên cấp 1
     const results: ProductWithLevel1Category[] = []
 
     for (const product of products) {
@@ -466,7 +590,6 @@ export class ProductRepository implements IProductRepository {
     return results
   }
 
-  // Helper: Truy vết lên category cấp 1 (parentId = null)
   private async findLevel1CategoryId(categoryId: string): Promise<string> {
     let currentCategoryId = categoryId
 
@@ -480,12 +603,10 @@ export class ProductRepository implements IProductRepository {
         throw new NotFoundException(`Category not found: ${currentCategoryId}`)
       }
 
-      // Nếu parentId = null => đây là category cấp 1
       if (category.parentId === null) {
         return category.id
       }
 
-      // Tiếp tục lên parent
       currentCategoryId = category.parentId
     }
   }
@@ -511,3 +632,4 @@ export class ProductRepository implements IProductRepository {
     })
   }
 }
+

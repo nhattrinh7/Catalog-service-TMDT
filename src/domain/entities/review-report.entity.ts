@@ -6,6 +6,8 @@ export class ReviewReport {
     public readonly id: string,
     public readonly reviewId: string,
     public readonly reporterId: string,
+    public readonly reporterUsername: string,
+    public readonly reporterAvatar: string | null,
     public readonly reason: ReviewReportReason,
     public description: string | null,
     public status: ReviewReportStatus,
@@ -15,6 +17,8 @@ export class ReviewReport {
   static create(props: {
     reviewId: string
     reporterId: string
+    reporterUsername: string
+    reporterAvatar?: string | null
     reason: ReviewReportReason
     description?: string | null
   }): ReviewReport {
@@ -22,6 +26,8 @@ export class ReviewReport {
       uuidv4(),
       props.reviewId,
       props.reporterId,
+      props.reporterUsername,
+      props.reporterAvatar ?? null,
       props.reason,
       props.description ?? null,
       ReviewReportStatus.PENDING,

@@ -38,6 +38,40 @@ export class ProductSearchRepository implements IProductSearchRepository {
     }
   }
 
+  async incrementBuyCount(productId: string, quantity: number): Promise<void> {
+    try {
+      await this.esService.update({
+        index: PRODUCTS_INDEX,
+        id: productId,
+        script: {
+          source: 'ctx._source.buy_count = (ctx._source.buy_count != null ? ctx._source.buy_count : 0) + params.count',
+          params: { count: quantity },
+        },
+      })
+      this.logger.debug(`Incremented buy_count for product: ${productId} (+${quantity})`)
+    } catch (error) {
+      this.logger.error(`Failed to increment buy_count for product ${productId}:`, error)
+      throw error
+    }
+  }
+
+  async decrementBuyCount(productId: string, quantity: number): Promise<void> {
+    try {
+      await this.esService.update({
+        index: PRODUCTS_INDEX,
+        id: productId,
+        script: {
+          source: 'ctx._source.buy_count = Math.max(0, (ctx._source.buy_count != null ? ctx._source.buy_count : 0) - params.count)',
+          params: { count: quantity },
+        },
+      })
+      this.logger.debug(`Decremented buy_count for product: ${productId} (-${quantity})`)
+    } catch (error) {
+      this.logger.error(`Failed to decrement buy_count for product ${productId}:`, error)
+      throw error
+    }
+  }
+
   async deleteProduct(id: string): Promise<void> {
     try {
       await this.esService.delete({

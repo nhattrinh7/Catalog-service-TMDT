@@ -37,6 +37,12 @@ import { SagaValidateItemsHandler } from './commands/saga-validate-items/saga-va
 import { CreateProductReviewHandler } from './commands/create-product-review/create-product-review.command.handler'
 import { CreateReviewReportHandler } from './commands/create-review-report/create-review-report.command.handler'
 import { GetReviewedOrderItemsHandler } from './queries/get-reviewed-order-items/get-reviewed-order-items.query.handler'
+import { CreateReviewReplyHandler } from './commands/create-review-reply/create-review-reply.command.handler'
+import { GetShopReviewsPaginatedHandler } from './queries/get-shop-reviews-paginated/get-shop-reviews-paginated.query.handler'
+import { HideProductReviewHandler } from './commands/hide-product-review/hide-product-review.command.handler'
+import { GetReportedReviewsPaginatedHandler } from './queries/get-reported-reviews-paginated/get-reported-reviews-paginated.query.handler'
+import { IncreaseBuyCountHandler } from './commands/increase-buy-count/increase-buy-count.command.handler'
+import { DecreaseBuyCountHandler } from './commands/decrease-buy-count/decrease-buy-count.command.handler'
 
 const CommandHandlers = [
   CreateCategoryHandler,
@@ -56,6 +62,10 @@ const CommandHandlers = [
   SagaValidateItemsHandler,
   CreateProductReviewHandler,
   CreateReviewReportHandler,
+  CreateReviewReplyHandler,
+  HideProductReviewHandler,
+  IncreaseBuyCountHandler,
+  DecreaseBuyCountHandler,
 ]
 
 const QueryHandlers = [
@@ -73,6 +83,8 @@ const QueryHandlers = [
   GetVariantsBatchHandler,
   GetDescendantCategoryIdsHandler,
   GetReviewedOrderItemsHandler,
+  GetShopReviewsPaginatedHandler,
+  GetReportedReviewsPaginatedHandler,
 ]
 
 const EventHandlers = [
