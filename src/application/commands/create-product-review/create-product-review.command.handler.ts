@@ -2,6 +2,7 @@
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common'
 import { CreateProductReviewCommand } from '~/application/commands/create-product-review/create-product-review.command'
 import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
+import { PRODUCT_SEARCH_REPOSITORY, type IProductSearchRepository } from '~/domain/repositories/product-search.repository.interface'
 import { ProductReview } from '~/domain/entities/product-review.entity'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
 
@@ -10,6 +11,8 @@ export class CreateProductReviewHandler implements ICommandHandler<CreateProduct
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: IProductRepository,
+    @Inject(PRODUCT_SEARCH_REPOSITORY)
+    private readonly productSearchRepository: IProductSearchRepository,
     private readonly prismaService: PrismaService,
   ) {}
 
@@ -48,15 +51,18 @@ export class CreateProductReviewHandler implements ICommandHandler<CreateProduct
       video: body.video,
     })
 
+    const newRatingCount = product.ratingCount + 1
+    const newRatingAvg = ((product.ratingAvg * product.ratingCount) + body.rating) / newRatingCount
+
     await this.prismaService.transaction(async (tx) => {
       await this.productRepository.createReview(review, tx)
-
-      const newRatingCount = product.ratingCount + 1
-      const newRatingAvg = parseFloat(
-        (((product.ratingAvg * product.ratingCount) + body.rating) / newRatingCount).toFixed(1)
-      )
-
       await this.productRepository.updateRating(productId, newRatingAvg, newRatingCount, tx)
     })
+
+    if (product.approveStatus === 'ACCEPTED') {
+      await this.productSearchRepository.updateProduct(productId, {
+        ratingAvg: newRatingAvg,
+      })
+    }
   }
 }
