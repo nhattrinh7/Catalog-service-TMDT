@@ -82,6 +82,7 @@ export const PRODUCTS_INDEX_CONFIG = {
       },
       category_hierarchy: {
         type: 'keyword',
+        normalizer: 'lowercase_normalizer',
       },
       price: {
         type: 'object',
