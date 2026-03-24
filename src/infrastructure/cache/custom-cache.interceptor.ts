@@ -52,9 +52,6 @@ export class CustomCacheInterceptor extends CacheInterceptor {
     const cacheType = this.reflector.get<CacheTypeValue>(CACHE_TYPE_KEY, context.getHandler())
     const cacheResource = this.reflector.get<string>(CACHE_RESOURCE_KEY, context.getHandler())
 
-    console.log('cacheType:', cacheType)        // ← thêm
-    console.log('cacheResource:', cacheResource) // ← thêm
-
     // Nếu không có decorator @CacheType() và @CacheResource() thì không cache
     if (!cacheType || !cacheResource) return undefined
 
@@ -63,18 +60,15 @@ export class CustomCacheInterceptor extends CacheInterceptor {
 
     switch (cacheType) {
       case 'list': {
-        console.log(`cache:list:${cacheResource}:${keySuffix}`)
         return `cache:list:${cacheResource}:${keySuffix}`
       }
 
       case 'detail': {
-        console.log(`cache:detail:${cacheResource}:${request.params.id}`)
         return `cache:detail:${cacheResource}:${request.params.id}`
       }
 
       case 'personal': {
         const userId = request.params.id || request.headers['x-user-id']
-        console.log(`cache:personal:${cacheResource}:${userId}`)
         return `cache:personal:${cacheResource}:${userId}`
       }
 

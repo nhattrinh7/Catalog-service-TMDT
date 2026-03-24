@@ -179,6 +179,7 @@ export class ProductController {
     return { message: 'Get products paginated successful', data: result}
   }
   
+  // Phần sản phẩm trong trang quản lý sản phẩm của admin chỉ có 2 api này thôi
   @Patch('/:id/approve')
   async approveProduct(
     @Param('id') id: string,
@@ -199,7 +200,8 @@ export class ProductController {
   }
 
 
-
+  
+  // ----------------------------
   @Get('/:id/to-sold')
   async getProductToSold(
     @Param('id') id: string,
