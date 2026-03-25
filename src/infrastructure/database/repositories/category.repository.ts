@@ -73,6 +73,30 @@ export class CategoryRepository implements ICategoryRepository {
     return hierarchy
   }
 
+  /**
+   * Tìm root category (cấp 1) từ bất kỳ categoryId nào (kể cả lá)
+   * Traverse ngược lên parent cho đến khi tìm được category có parentId = null
+   */
+  async findRootCategoryId(categoryId: string): Promise<string | null> {
+    let currentId: string | null = categoryId
+
+    while (currentId) {
+      const category = await this.prisma.category.findUnique({
+        where: { id: currentId },
+        select: { id: true, parentId: true },
+      })
+
+      if (!category) return null
+
+      // Nếu không có parent → đây là root category
+      if (!category.parentId) return category.id
+
+      currentId = category.parentId
+    }
+
+    return null
+  }
+
   // Lấy tất cả categoryId con/cháu từ danh sách parentIds (bao gồm chính parentIds)
   async findAllDescendantIds(parentIds: string[]): Promise<string[]> {
     if (parentIds.length === 0) return []

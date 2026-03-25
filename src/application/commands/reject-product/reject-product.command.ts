@@ -4,5 +4,6 @@ export class RejectProductCommand implements ICommand {
   constructor(
     public readonly id: string,
     public readonly rejectReason: string,
+    public readonly roleCategoryIds: string[],
   ) {}
 }

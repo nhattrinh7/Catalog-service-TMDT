@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { ApproveProductCommand } from '~/application/commands/approve-product/approve-product.command'
 import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
-import { Inject, NotFoundException } from '@nestjs/common'
+import { Inject, NotFoundException, ForbiddenException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { PRODUCT_VARIANT_REPOSITORY, type IProductVariantRepository } from '~/domain/repositories/product-variant.repository.interface'
 import { CATEGORY_REPOSITORY, type ICategoryRepository } from '~/domain/repositories/category.repository.interface'
@@ -24,11 +24,20 @@ export class ApproveProductHandler implements ICommandHandler<ApproveProductComm
   ) {}
 
   async execute(command: ApproveProductCommand) {
-    const { id } = command
+    const { id, roleCategoryIds } = command
 
     // 1. Lấy product từ DB
     const product = await this.productRepository.findById(id)
     if (!product) throw new NotFoundException('This product is not exist')
+
+    // ABAC: kiểm tra admin có quyền duyệt sản phẩm thuộc ngành hàng này không
+    // roleCategoryIds rỗng = SUPER_ADMIN → không giới hạn
+    if (roleCategoryIds.length > 0) {
+      const rootCategoryId = await this.categoryRepository.findRootCategoryId(product.categoryId)
+      if (!rootCategoryId || !roleCategoryIds.includes(rootCategoryId)) {
+        throw new ForbiddenException('Bạn không có quyền duyệt sản phẩm thuộc ngành hàng này')
+      }
+    }
 
     // 2. Gọi method approve() của entity
     product.approve()

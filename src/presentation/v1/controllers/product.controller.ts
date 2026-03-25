@@ -183,8 +183,10 @@ export class ProductController {
   @Patch('/:id/approve')
   async approveProduct(
     @Param('id') id: string,
+    @Headers('x-role-category-ids') roleCategoryIdsHeader: string,
   ): Promise<any> {
-    await this.commandBus.execute(new ApproveProductCommand(id))
+    const roleCategoryIds = roleCategoryIdsHeader ? roleCategoryIdsHeader.split(',') : []
+    await this.commandBus.execute(new ApproveProductCommand(id, roleCategoryIds))
 
     return { message: 'Approve product successful' }
   }
@@ -193,8 +195,10 @@ export class ProductController {
   async rejectProduct(
     @Param('id') id: string,
     @Body() body: { rejectReason: string },
+    @Headers('x-role-category-ids') roleCategoryIdsHeader: string,
   ): Promise<any> {
-    await this.commandBus.execute(new RejectProductCommand(id, body.rejectReason))
+    const roleCategoryIds = roleCategoryIdsHeader ? roleCategoryIdsHeader.split(',') : []
+    await this.commandBus.execute(new RejectProductCommand(id, body.rejectReason, roleCategoryIds))
 
     return { message: 'Reject product successful' }
   }
