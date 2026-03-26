@@ -1,6 +1,6 @@
 import { Product } from '~/domain/entities/product.entity'
 import { ProductVariant } from '~/domain/entities/product-variant.entity'
-import { ProductSearchDocument } from '~/domain/types/product-search.types'
+import { ProductSearchDocument } from '~/domain/interfaces/product.interface'
 
 export class ProductSearchMapper {
   static toElasticDocument(

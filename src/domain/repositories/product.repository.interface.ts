@@ -2,7 +2,7 @@ import { Product } from "~/domain/entities/product.entity"
 import { ProductReview } from "~/domain/entities/product-review.entity"
 import { IProductWithVariants } from "~/domain/interfaces/product.interface"
 import { ReviewReportReason } from "~/domain/enums/review-report.enum"
-import { PaginatedResult } from "~/domain/types/pagination.types"
+import { PaginatedResult } from "~/domain/interfaces/pagination.interface"
 
 export interface ProductWithLevel1Category {
   productId: string

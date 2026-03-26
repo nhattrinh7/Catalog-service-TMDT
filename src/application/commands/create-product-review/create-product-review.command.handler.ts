@@ -1,4 +1,4 @@
-﻿import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common'
 import { CreateProductReviewCommand } from '~/application/commands/create-product-review/create-product-review.command'
 import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'

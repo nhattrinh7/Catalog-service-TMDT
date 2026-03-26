@@ -3,7 +3,7 @@ import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositori
 import { Inject } from '@nestjs/common'
 import { GetShopProductsPaginatedQuery } from '~/application/queries/get-shop-products-paginated/get-shop-products-paginated.query'
 import { Product } from '~/domain/entities/product.entity'
-import { PaginatedResult } from '~/domain/types/pagination.types'
+import { PaginatedResult } from '~/domain/interfaces/pagination.interface'
 import { MESSAGE_PUBLISHER, type IMessagePublisher } from '~/domain/contracts/message-publisher.interface'
 
 @QueryHandler(GetShopProductsPaginatedQuery)

@@ -8,6 +8,7 @@ import { CATEGORY_REPOSITORY, type ICategoryRepository } from '~/domain/reposito
 import { PRODUCT_SEARCH_REPOSITORY, type IProductSearchRepository } from '~/domain/repositories/product-search.repository.interface'
 import { ProductSearchMapper } from '~/infrastructure/elasticsearch/mappers/product-search.mapper'
 import { CACHE_EVENT, CACHE_RESOURCE, CACHE_TYPE } from '~/common/constants/cache.constant'
+import { INITIAL_BUY_COUNT, INITIAL_IS_IN_STOCK } from '~/common/constants/index.constants'
 
 @CommandHandler(ApproveProductCommand)
 export class ApproveProductHandler implements ICommandHandler<ApproveProductCommand, void> {
@@ -59,8 +60,8 @@ export class ApproveProductHandler implements ICommandHandler<ApproveProductComm
       variants,
       categoryName,
       categoryHierarchy,
-      0, // buy_count = 0 cho sản phẩm mới duyệt
-      true, // is_in_stock = true cho sản phẩm mới duyệt
+      INITIAL_BUY_COUNT, // buy_count = 0 cho sản phẩm mới duyệt
+      INITIAL_IS_IN_STOCK, // is_in_stock = true cho sản phẩm mới duyệt
     )
     // Index vào Elasticsearch
     await this.productSearchRepository.indexProduct(productSearchDocument)

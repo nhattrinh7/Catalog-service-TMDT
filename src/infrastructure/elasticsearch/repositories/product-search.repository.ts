@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ElasticsearchService as NestElasticsearchService } from '@nestjs/elasticsearch'
 import { IProductSearchRepository } from '~/domain/repositories/product-search.repository.interface'
-import { ProductSearchDocument } from '~/domain/types/product-search.types'
+import { ProductSearchDocument } from '~/domain/interfaces/product.interface'
 import { PRODUCTS_INDEX } from '~/common/constants/index.constants'
 
 @Injectable()
