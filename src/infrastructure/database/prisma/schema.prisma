@@ -18,6 +18,7 @@ model Brand {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
+  @@index([createdAt(sort: Desc)])
   @@map("brands")
 }
 
@@ -34,6 +35,7 @@ model Category {
   children    Category[] @relation("CategoryHierarchy")
   products    Product[]
 
+  @@index([parentId])
   @@map("categories")
 }
 
@@ -63,6 +65,9 @@ model Product {
   variants          ProductVariant[]
   reviews           ProductReview[] 
 
+  @@index([shopId, isDeleted, approveStatus, isActive, createdAt(sort: Desc)])
+  @@index([categoryId, isDeleted, approveStatus, createdAt(sort: Desc)])
+  @@index([shopId, isDeleted, approveStatus])
   @@map("products")
 }
 
@@ -86,6 +91,7 @@ model ProductVariant {
   product     Product  @relation(fields: [productId], references: [id])
   productVariantOptionValues ProductVariantOptionValue[]
 
+  @@index([productId, isDeleted])
   @@map("product_variants")
 }
 
@@ -114,6 +120,9 @@ model ProductReview {
   reports       ReviewReport[]
 
   @@unique([orderId, productId])
+  @@index([productId, rating, createdAt(sort: Desc)])
+  @@index([shopId, rating, createdAt(sort: Desc)])
+  @@index([isHidden, createdAt(sort: Desc)])
   @@map("product_reviews")
 }
 
@@ -144,6 +153,7 @@ model ReviewReport {
   review      ProductReview      @relation(fields: [reviewId], references: [id])
 
   @@unique([reviewId, reporterId])
+  @@index([reviewId, createdAt(sort: Desc)])
   @@map("review_reports")
 }
 
@@ -169,6 +179,7 @@ model Option {
 
   optionValues OptionValue[]
 
+  @@index([name])
   @@map("options")
 }
 
@@ -180,6 +191,8 @@ model OptionValue {
   option      Option   @relation(fields: [optionId], references: [id])
   productVariantOptionValues ProductVariantOptionValue[]
   
+  @@index([optionId])
+  @@index([value])
   @@map("option_values")
 }
 
@@ -191,5 +204,6 @@ model ProductVariantOptionValue {
   optionValue   OptionValue    @relation(fields: [optionValueId], references: [id])  // N-1
 
   @@id([variantId, optionValueId])
+  @@index([optionValueId])
   @@map("product_variant_option_values")
 }
