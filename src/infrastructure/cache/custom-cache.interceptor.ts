@@ -10,7 +10,7 @@ import type { Cache } from 'cache-manager'
 
 
 // ***
-// CustomCacheInterceptor của bạn đang extends CacheInterceptor của @nestjs/cache-manager. 
+// CustomCacheInterceptor đang extends CacheInterceptor của @nestjs/cache-manager. 
 // Và cái interceptor gốc của NestJS nó có một tính năng bảo mật mặc định (ngầm định) cực kỳ gây ức chế 
 // nếu không đọc kỹ Docs: "Nếu nó thấy request gửi lên có chứa header authorization, 
 // nó sẽ TỪ CHỐI cache (bỏ qua luôn)". Nó sợ là dữ liệu mật của người này sẽ bị dính vào cache 
