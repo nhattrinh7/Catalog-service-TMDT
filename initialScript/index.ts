@@ -2,7 +2,8 @@ import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
 import * as dotenv from 'dotenv'
 
 // Load environment variables
-dotenv.config()
+const envPath = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development'
+dotenv.config({ path: envPath })
 
 const prisma = new PrismaService()
 
