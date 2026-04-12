@@ -10,9 +10,7 @@ interface GetDescendantCategoryIdsPayload {
 
 @Controller()
 export class GetDescendantCategoryIdsConsumer extends BaseRetryConsumer {
-  constructor(
-    private readonly queryBus: QueryBus,
-  ) {
+  constructor(private readonly queryBus: QueryBus) {
     super()
   }
 
@@ -22,7 +20,9 @@ export class GetDescendantCategoryIdsConsumer extends BaseRetryConsumer {
     @Ctx() context: RmqContext,
   ) {
     const result = await this.handleWithRetry(context, async () => {
-      this.logger.log(`Event get.descendant.category.ids received, count=${data.categoryIds.length}`)
+      this.logger.log(
+        `Event get.descendant.category.ids received, count=${data.categoryIds.length}`,
+      )
       return await this.queryBus.execute(new GetDescendantCategoryIdsQuery(data.categoryIds))
     })
 

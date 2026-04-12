@@ -1,4 +1,3 @@
-
 import { Brand as PrismaBrand } from '@prisma/client'
 import { Brand } from '~/domain/entities/brand.entity'
 
@@ -18,7 +17,7 @@ export class BrandMapper {
   static toPersistence(brand: Brand): PrismaBrand {
     return {
       id: brand.id,
-      name: brand.name,       
+      name: brand.name,
       description: brand.description,
       logo: brand.logo,
       country: brand.country,

@@ -3,7 +3,10 @@ import { Payload, Ctx, RmqContext, EventPattern } from '@nestjs/microservices'
 import { CommandBus } from '@nestjs/cqrs'
 import { BaseRetryConsumer } from '~/common/utils/base-retry.consumer'
 import { SagaValidateItemsCommand } from '~/application/commands/saga-validate-items/saga-validate-items.command'
-import { MESSAGE_PUBLISHER, type IMessagePublisher } from '~/domain/contracts/message-publisher.interface'
+import {
+  MESSAGE_PUBLISHER,
+  type IMessagePublisher,
+} from '~/domain/contracts/message-publisher.interface'
 
 @Controller()
 export class SagaValidateItemsConsumer extends BaseRetryConsumer {

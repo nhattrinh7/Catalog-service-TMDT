@@ -14,8 +14,8 @@ export class OptionValueRepository implements IOptionValueRepository {
       optionValues.map(optionValue =>
         client.optionValue.create({
           data: OptionValueMapper.toPersistence(optionValue),
-        })
-      )
+        }),
+      ),
     )
     return createdOptionValues.map(ov => OptionValueMapper.toDomain(ov))
   }

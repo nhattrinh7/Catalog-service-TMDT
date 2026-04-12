@@ -1,5 +1,8 @@
 import { QueryHandler, IQueryHandler } from '@nestjs/cqrs'
-import { CATEGORY_REPOSITORY, type ICategoryRepository } from '~/domain/repositories/category.repository.interface'
+import {
+  CATEGORY_REPOSITORY,
+  type ICategoryRepository,
+} from '~/domain/repositories/category.repository.interface'
 import { Inject } from '@nestjs/common'
 import { GetCategoryQuery } from '~/application/queries/get-category/get-category.query'
 import { Category } from '~/domain/entities/category.entity'

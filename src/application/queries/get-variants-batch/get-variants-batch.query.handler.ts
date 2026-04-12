@@ -20,7 +20,9 @@ interface GetVariantsBatchResponse {
 }
 
 @QueryHandler(GetVariantsBatchQuery)
-export class GetVariantsBatchHandler implements IQueryHandler<GetVariantsBatchQuery, GetVariantsBatchResponse> {
+export class GetVariantsBatchHandler
+  implements IQueryHandler<GetVariantsBatchQuery, GetVariantsBatchResponse>
+{
   constructor(
     @Inject(PRODUCT_VARIANT_REPOSITORY)
     private readonly variantRepository: IProductVariantRepository,

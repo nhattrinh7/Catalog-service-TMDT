@@ -1,6 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { UpdateBrandCommand } from '~/application/commands/update-brand/update-brand.command'
-import { BRAND_REPOSITORY, type IBrandRepository } from '~/domain/repositories/brand.repository.interface'
+import {
+  BRAND_REPOSITORY,
+  type IBrandRepository,
+} from '~/domain/repositories/brand.repository.interface'
 import { Inject, NotFoundException } from '@nestjs/common'
 
 @CommandHandler(UpdateBrandCommand)

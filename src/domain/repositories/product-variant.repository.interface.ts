@@ -1,4 +1,4 @@
-import { ProductVariant } from "~/domain/entities/product-variant.entity"
+import { ProductVariant } from '~/domain/entities/product-variant.entity'
 
 export interface IProductVariantRepository {
   createMany(productVariants: ProductVariant[], tx?: any): Promise<void>

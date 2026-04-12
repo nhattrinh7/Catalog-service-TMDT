@@ -9,17 +9,15 @@ interface ValidateItemsResult {
 }
 
 @CommandHandler(SagaValidateItemsCommand)
-export class SagaValidateItemsHandler implements ICommandHandler<SagaValidateItemsCommand, ValidateItemsResult> {
-  constructor(
-    private readonly queryBus: QueryBus,
-  ) {}
+export class SagaValidateItemsHandler
+  implements ICommandHandler<SagaValidateItemsCommand, ValidateItemsResult>
+{
+  constructor(private readonly queryBus: QueryBus) {}
 
   async execute(command: SagaValidateItemsCommand): Promise<ValidateItemsResult> {
     const { productVariantIds } = command
 
-    const result = await this.queryBus.execute(
-      new GetVariantsBatchQuery(productVariantIds),
-    )
+    const result = await this.queryBus.execute(new GetVariantsBatchQuery(productVariantIds))
     const variants = result.variants
 
     if (!variants || variants.length !== productVariantIds.length) {

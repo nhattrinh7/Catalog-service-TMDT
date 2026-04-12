@@ -5,20 +5,14 @@ import { CreateReviewReplyBodyDto } from '~/presentation/dtos/review-reply.dto'
 
 @Controller('v1/reviews')
 export class ReviewReplyController {
-  constructor(
-    private readonly commandBus: CommandBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Post('/:id/reply')
   async createReviewReply(
     @Param('id') id: string,
     @Body() body: CreateReviewReplyBodyDto,
   ): Promise<{ message: string }> {
-    await this.commandBus.execute(new CreateReviewReplyCommand(
-      id,
-      body.shopId,
-      body.content,
-    ))
+    await this.commandBus.execute(new CreateReviewReplyCommand(id, body.shopId, body.content))
 
     return { message: 'Create review reply successful' }
   }

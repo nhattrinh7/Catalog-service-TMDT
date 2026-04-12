@@ -1,7 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { Inject } from '@nestjs/common'
 import { CreateReviewReportCommand } from '~/application/commands/create-review-report/create-review-report.command'
-import { REVIEW_REPORT_REPOSITORY, type IReviewReportRepository } from '~/domain/repositories/review-report.repository.interface'
+import {
+  REVIEW_REPORT_REPOSITORY,
+  type IReviewReportRepository,
+} from '~/domain/repositories/review-report.repository.interface'
 import { ReviewReport } from '~/domain/entities/review-report.entity'
 
 @CommandHandler(CreateReviewReportCommand)

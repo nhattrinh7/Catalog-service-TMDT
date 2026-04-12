@@ -6,9 +6,7 @@ import { DecreaseBuyCountCommand } from '~/application/commands/decrease-buy-cou
 
 @Controller()
 export class OrderDecreaseBuyCountConsumer extends BaseRetryConsumer {
-  constructor(
-    private readonly commandBus: CommandBus,
-  ) {
+  constructor(private readonly commandBus: CommandBus) {
     super()
   }
 

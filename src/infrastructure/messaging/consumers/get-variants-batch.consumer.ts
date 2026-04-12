@@ -10,9 +10,7 @@ interface GetVariantsBatchPayload {
 
 @Controller()
 export class GetVariantsBatchConsumer extends BaseRetryConsumer {
-  constructor(
-    private readonly queryBus: QueryBus,
-  ) {
+  constructor(private readonly queryBus: QueryBus) {
     super()
   }
 

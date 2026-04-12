@@ -21,8 +21,8 @@ import { CacheEvictListener } from '~/infrastructure/cache/cache-evict.listener'
           ttl: 300_000, // default TTL 5 phút (milliseconds)
         })
 
-        // Keyv 5 (được dùng bởi cache-manager v6/v7 trong @nestjs/cache-manager v3) 
-        // yêu cầu method 'delete' và 'clear'. 
+        // Keyv 5 (được dùng bởi cache-manager v6/v7 trong @nestjs/cache-manager v3)
+        // yêu cầu method 'delete' và 'clear'.
         // Trong khi redisStore (chuẩn cũ) cung cấp 'del' và 'reset'.
         // Ta cần alias chúng để không bị lỗi "Invalid storage adapter".
         if (typeof (store as any).del === 'function' && !(store as any).delete) {

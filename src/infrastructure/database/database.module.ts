@@ -75,4 +75,3 @@ import { CqrsModule } from '@nestjs/cqrs'
   ],
 })
 export class DatabaseModule {}
-

@@ -1,13 +1,21 @@
 import { QueryHandler, IQueryHandler } from '@nestjs/cqrs'
-import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
+import {
+  PRODUCT_REPOSITORY,
+  type IProductRepository,
+} from '~/domain/repositories/product.repository.interface'
 import { Inject } from '@nestjs/common'
 import { GetShopProductsPaginatedQuery } from '~/application/queries/get-shop-products-paginated/get-shop-products-paginated.query'
 import { Product } from '~/domain/entities/product.entity'
 import { PaginatedResult } from '~/domain/interfaces/pagination.interface'
-import { MESSAGE_PUBLISHER, type IMessagePublisher } from '~/domain/contracts/message-publisher.interface'
+import {
+  MESSAGE_PUBLISHER,
+  type IMessagePublisher,
+} from '~/domain/contracts/message-publisher.interface'
 
 @QueryHandler(GetShopProductsPaginatedQuery)
-export class GetShopProductsPaginatedHandler implements IQueryHandler<GetShopProductsPaginatedQuery, PaginatedResult<Product>> {
+export class GetShopProductsPaginatedHandler
+  implements IQueryHandler<GetShopProductsPaginatedQuery, PaginatedResult<Product>>
+{
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: IProductRepository,
@@ -32,7 +40,12 @@ export class GetShopProductsPaginatedHandler implements IQueryHandler<GetShopPro
     // Gọi trực tiếp message publisher thay vì dùng event
     const stocksResponse = await this.messagePublisher.sendToInventoryService<
       { productIds: string[] },
-      { stocks: Array<{ productId: string; variants: Array<{ productVariantId: string; stock: number; soldQuantity: number }> }> }
+      {
+        stocks: Array<{
+          productId: string
+          variants: Array<{ productVariantId: string; stock: number; soldQuantity: number }>
+        }>
+      }
     >('get.stocks', { productIds })
 
     // Tạo map để lookup stock và soldQuantity theo productVariantId nhanh hơn

@@ -1,11 +1,23 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { ApproveProductCommand } from '~/application/commands/approve-product/approve-product.command'
-import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
+import {
+  PRODUCT_REPOSITORY,
+  type IProductRepository,
+} from '~/domain/repositories/product.repository.interface'
 import { Inject, NotFoundException, ForbiddenException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { PRODUCT_VARIANT_REPOSITORY, type IProductVariantRepository } from '~/domain/repositories/product-variant.repository.interface'
-import { CATEGORY_REPOSITORY, type ICategoryRepository } from '~/domain/repositories/category.repository.interface'
-import { PRODUCT_SEARCH_REPOSITORY, type IProductSearchRepository } from '~/domain/repositories/product-search.repository.interface'
+import {
+  PRODUCT_VARIANT_REPOSITORY,
+  type IProductVariantRepository,
+} from '~/domain/repositories/product-variant.repository.interface'
+import {
+  CATEGORY_REPOSITORY,
+  type ICategoryRepository,
+} from '~/domain/repositories/category.repository.interface'
+import {
+  PRODUCT_SEARCH_REPOSITORY,
+  type IProductSearchRepository,
+} from '~/domain/repositories/product-search.repository.interface'
 import { ProductSearchMapper } from '~/infrastructure/elasticsearch/mappers/product-search.mapper'
 import { CACHE_EVENT, CACHE_RESOURCE, CACHE_TYPE } from '~/common/constants/cache.constant'
 import { INITIAL_BUY_COUNT, INITIAL_IS_IN_STOCK } from '~/common/constants/index.constants'
@@ -49,7 +61,7 @@ export class ApproveProductHandler implements ICommandHandler<ApproveProductComm
     // 4. Đồng bộ với Elasticsearch khi duyệt sản phẩm
     // Lấy variants của sản phẩm
     const variants = await this.productVariantRepository.findByProductId(id)
-    
+
     // Lấy category name và category hierarchy
     const categoryHierarchy = await this.categoryRepository.getCategoryHierarchy(product.categoryId)
     const categoryName = categoryHierarchy.length > 0 ? categoryHierarchy[0] : ''
@@ -67,6 +79,10 @@ export class ApproveProductHandler implements ICommandHandler<ApproveProductComm
     await this.productSearchRepository.indexProduct(productSearchDocument)
 
     // Invalidate cache product detail
-    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, { type: CACHE_TYPE.DETAIL, resource: CACHE_RESOURCE.PRODUCTS, id })
+    this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, {
+      type: CACHE_TYPE.DETAIL,
+      resource: CACHE_RESOURCE.PRODUCTS,
+      id,
+    })
   }
 }

@@ -10,9 +10,6 @@ export class Option extends AggregateRoot {
   }
 
   static create(props: { name: string }): Option {
-    return new Option(
-      uuidv4(), 
-      props.name
-    )
+    return new Option(uuidv4(), props.name)
   }
 }

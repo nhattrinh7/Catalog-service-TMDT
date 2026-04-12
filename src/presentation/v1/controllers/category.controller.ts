@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Param,
-  Body,
-  Post,
-  Get,
-  UseInterceptors,
-} from '@nestjs/common'
+import { Controller, Param, Body, Post, Get, UseInterceptors } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { CacheTTL } from '@nestjs/cache-manager'
 import { CreateCategoryCommand } from '~/application/commands/create-category/create-category.command'
@@ -59,13 +52,9 @@ export class CategoryController {
   @CacheType(CACHE_TYPE.DETAIL)
   @CacheResource(CACHE_RESOURCE.CATEGORIES)
   @CacheTTL(3_600_000) // 1 giờ
-  async getCategory(
-    @Param('id') id: string
-  ): Promise<any> {
+  async getCategory(@Param('id') id: string): Promise<any> {
     const category = await this.queryBus.execute(new GetCategoryQuery(id))
 
     return { message: 'Get category successful', data: category }
   }
-
 }
-  

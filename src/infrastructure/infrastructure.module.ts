@@ -10,4 +10,3 @@ import { AppCacheModule } from '~/infrastructure/cache/cache.module'
   exports: [],
 })
 export class InfrastructureModule {}
-

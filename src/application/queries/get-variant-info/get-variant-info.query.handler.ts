@@ -15,7 +15,9 @@ interface VariantInfoResponse {
 }
 
 @QueryHandler(GetVariantInfoQuery)
-export class GetVariantInfoHandler implements IQueryHandler<GetVariantInfoQuery, VariantInfoResponse> {
+export class GetVariantInfoHandler
+  implements IQueryHandler<GetVariantInfoQuery, VariantInfoResponse>
+{
   constructor(
     @Inject(PRODUCT_VARIANT_REPOSITORY)
     private readonly variantRepository: IProductVariantRepository,
@@ -25,7 +27,7 @@ export class GetVariantInfoHandler implements IQueryHandler<GetVariantInfoQuery,
     const { productVariantId } = query
 
     const variant = await this.variantRepository.findVariantWithProduct(productVariantId)
-    
+
     if (!variant) {
       throw new NotFoundException(`Product variant with id ${productVariantId} not found`)
     }

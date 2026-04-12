@@ -30,7 +30,7 @@ export class ProductMapper {
   static toPersistence(product: Product): PrismaProduct {
     return {
       id: product.id,
-      name: product.name,       
+      name: product.name,
       descriptions: product.descriptions,
       attributes: product.attributes,
       shopId: product.shopId,

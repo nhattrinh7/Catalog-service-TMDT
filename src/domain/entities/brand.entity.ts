@@ -25,7 +25,7 @@ export class Brand extends AggregateRoot {
       new Date(),
       new Date(),
     )
-    
+
     return brand
   }
 

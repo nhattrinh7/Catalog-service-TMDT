@@ -26,7 +26,7 @@ export class Category extends AggregateRoot {
       new Date(),
       new Date(),
     )
-    
+
     return category
   }
 }

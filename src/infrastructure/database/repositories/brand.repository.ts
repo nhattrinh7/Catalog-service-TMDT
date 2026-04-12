@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
 import { Brand } from '~/domain/entities/brand.entity'
-import { IBrandRepository, PaginatedBrandResult } from '~/domain/repositories/brand.repository.interface'
+import {
+  IBrandRepository,
+  PaginatedBrandResult,
+} from '~/domain/repositories/brand.repository.interface'
 
 @Injectable()
 export class BrandRepository implements IBrandRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(brand: Brand): Promise<void> { 
+  async create(brand: Brand): Promise<void> {
     await this.prisma.brand.create({ data: brand })
   }
 
@@ -49,7 +52,7 @@ export class BrandRepository implements IBrandRepository {
     ])
 
     const items = brands.map(
-      (brand) =>
+      brand =>
         new Brand(
           brand.id,
           brand.name,

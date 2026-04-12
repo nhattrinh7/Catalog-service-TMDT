@@ -10,17 +10,12 @@ interface GetVariantInfoPayload {
 
 @Controller()
 export class GetVariantInfoConsumer extends BaseRetryConsumer {
-  constructor(
-    private readonly queryBus: QueryBus,
-  ) {
+  constructor(private readonly queryBus: QueryBus) {
     super()
   }
 
   @MessagePattern('get.variant.info')
-  async handleGetVariantInfo(
-    @Payload() data: GetVariantInfoPayload,
-    @Ctx() context: RmqContext,
-  ) {
+  async handleGetVariantInfo(@Payload() data: GetVariantInfoPayload, @Ctx() context: RmqContext) {
     const result = await this.handleWithRetry(context, async () => {
       this.logger.log(`Event get.variant.info received, variantId=${data.productVariantId}`)
       return await this.queryBus.execute(new GetVariantInfoQuery(data.productVariantId))

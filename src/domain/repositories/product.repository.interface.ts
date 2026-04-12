@@ -1,8 +1,8 @@
-import { Product } from "~/domain/entities/product.entity"
-import { ProductReview } from "~/domain/entities/product-review.entity"
-import { IProductWithVariants } from "~/domain/interfaces/product.interface"
-import { ReviewReportReason } from "~/domain/enums/review-report.enum"
-import { PaginatedResult } from "~/domain/interfaces/pagination.interface"
+import { Product } from '~/domain/entities/product.entity'
+import { ProductReview } from '~/domain/entities/product-review.entity'
+import { IProductWithVariants } from '~/domain/interfaces/product.interface'
+import { ReviewReportReason } from '~/domain/enums/review-report.enum'
+import { PaginatedResult } from '~/domain/interfaces/pagination.interface'
 
 export interface ProductWithLevel1Category {
   productId: string
@@ -32,7 +32,7 @@ export interface ReportedReviewItem {
 
 export interface IProductRepository {
   create(product: Product, tx?: any): Promise<Product>
-  
+
   findPaginated(params: {
     page: number
     limit: number
@@ -84,12 +84,14 @@ export interface IProductRepository {
     isHidden?: boolean
   }): Promise<PaginatedResult<ReportedReviewItem>>
 
-  hideReview(reviewId: string, hiddenReason?: string | null, hiddenAt?: Date | null, tx?: any): Promise<void>
+  hideReview(
+    reviewId: string,
+    hiddenReason?: string | null,
+    hiddenAt?: Date | null,
+    tx?: any,
+  ): Promise<void>
 
-  existsReviewByOrderAndProduct(params: {
-    orderId: string
-    productId: string
-  }): Promise<boolean>
+  existsReviewByOrderAndProduct(params: { orderId: string; productId: string }): Promise<boolean>
 
   createReview(review: ProductReview, tx?: any): Promise<ProductReview>
 
@@ -104,5 +106,3 @@ export interface IProductRepository {
   }): Promise<Array<{ orderId: string; productId: string }>>
 }
 export const PRODUCT_REPOSITORY = Symbol('IProductRepository')
-
-

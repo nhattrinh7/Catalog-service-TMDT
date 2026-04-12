@@ -16,7 +16,12 @@ export class ProductVariantOptionValueRepository implements IProductVariantOptio
     })
   }
 
-  async findByVariantIds(variantIds: string[]): Promise<{ variantId: string; optionValue: { id: string; value: string; option: { id: string; name: string } } }[]> {
+  async findByVariantIds(variantIds: string[]): Promise<
+    {
+      variantId: string
+      optionValue: { id: string; value: string; option: { id: string; name: string } }
+    }[]
+  > {
     const results = await this.prisma.productVariantOptionValue.findMany({
       where: { variantId: { in: variantIds } },
       select: {

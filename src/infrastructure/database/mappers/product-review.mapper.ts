@@ -44,7 +44,7 @@ export class ProductReviewMapper {
       sku: review.sku,
       rating: review.rating,
       content: review.content,
-      images: review.images as Prisma.InputJsonValue ?? Prisma.DbNull,
+      images: (review.images as Prisma.InputJsonValue) ?? Prisma.DbNull,
       video: review.video,
       isHidden: review.isHidden,
       hiddenReason: review.hiddenReason,
@@ -53,4 +53,3 @@ export class ProductReviewMapper {
     }
   }
 }
-

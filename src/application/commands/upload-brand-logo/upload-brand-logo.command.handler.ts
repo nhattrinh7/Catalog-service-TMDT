@@ -4,9 +4,7 @@ import { CloudinaryService } from '~/common/services/cloudinary.service'
 
 @CommandHandler(UploadBrandLogoCommand)
 export class UploadBrandLogoHandler implements ICommandHandler<UploadBrandLogoCommand, string> {
-  constructor(
-    private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  constructor(private readonly cloudinaryService: CloudinaryService) {}
 
   async execute(command: UploadBrandLogoCommand) {
     const { file } = command

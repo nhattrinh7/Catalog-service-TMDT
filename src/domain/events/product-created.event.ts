@@ -7,6 +7,6 @@ export class ProductCreatedEvent implements IEvent {
       productVariantId: string
       stock: number
       shopId: string
-    }>
+    }>,
   ) {}
 }

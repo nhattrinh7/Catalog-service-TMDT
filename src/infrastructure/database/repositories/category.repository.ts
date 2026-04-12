@@ -9,9 +9,9 @@ import { Prisma } from '@prisma/client'
 export class CategoryRepository implements ICategoryRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(category: Category): Promise<Category> { 
+  async create(category: Category): Promise<Category> {
     const categoryToCreate = CategoryMapper.toPersistence(category)
-    
+
     const createdCategory = await this.prisma.category.create({
       data: {
         id: categoryToCreate.id,
@@ -20,28 +20,29 @@ export class CategoryRepository implements ICategoryRepository {
         parentId: categoryToCreate.parentId,
         // Nếu attributes là null thì gán là giá trị NULL trong database, nếu chỉ dùng Prisma.InputJsonValue
         // thì giá trị trường attributes trong database sẽ là chuỗi 'null' thay vì giá trị NULL
-        attributes: categoryToCreate.attributes === null 
-          ? Prisma.DbNull
-          : categoryToCreate.attributes as Prisma.InputJsonValue,
+        attributes:
+          categoryToCreate.attributes === null
+            ? Prisma.DbNull
+            : (categoryToCreate.attributes as Prisma.InputJsonValue),
         createdAt: categoryToCreate.createdAt,
         updatedAt: categoryToCreate.updatedAt,
-      }
+      },
     })
-    
+
     return CategoryMapper.toDomain(createdCategory)
   }
 
   async getCategories(): Promise<Category[] | null> {
     const categories = await this.prisma.category.findMany()
     if (!categories) return null
-    
+
     return categories.map(category => CategoryMapper.toDomain(category))
   }
 
   async getCategory(id: string): Promise<Category | null> {
     const category = await this.prisma.category.findUnique({ where: { id } })
     if (!category) return null
-    
+
     return CategoryMapper.toDomain(category)
   }
 
@@ -50,7 +51,7 @@ export class CategoryRepository implements ICategoryRepository {
       where: { parentId: null },
       select: { id: true, name: true },
     })
-    
+
     return categories
   }
 

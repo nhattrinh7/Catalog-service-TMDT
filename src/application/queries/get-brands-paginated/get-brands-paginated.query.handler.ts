@@ -1,7 +1,10 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 import { Inject } from '@nestjs/common'
 import { GetBrandsPaginatedQuery } from '~/application/queries/get-brands-paginated/get-brands-paginated.query'
-import { BRAND_REPOSITORY, type IBrandRepository } from '~/domain/repositories/brand.repository.interface'
+import {
+  BRAND_REPOSITORY,
+  type IBrandRepository,
+} from '~/domain/repositories/brand.repository.interface'
 import { Brand } from '~/domain/entities/brand.entity'
 
 export interface PaginationMeta {
@@ -17,7 +20,9 @@ export interface GetBrandsPaginatedResult {
 }
 
 @QueryHandler(GetBrandsPaginatedQuery)
-export class GetBrandsPaginatedHandler implements IQueryHandler<GetBrandsPaginatedQuery, GetBrandsPaginatedResult> {
+export class GetBrandsPaginatedHandler
+  implements IQueryHandler<GetBrandsPaginatedQuery, GetBrandsPaginatedResult>
+{
   constructor(
     @Inject(BRAND_REPOSITORY)
     private readonly brandRepository: IBrandRepository,
@@ -39,4 +44,3 @@ export class GetBrandsPaginatedHandler implements IQueryHandler<GetBrandsPaginat
     }
   }
 }
-

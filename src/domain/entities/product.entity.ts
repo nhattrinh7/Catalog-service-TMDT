@@ -53,7 +53,7 @@ export class Product extends AggregateRoot {
       new Date(),
       new Date(),
     )
-    
+
     return product
   }
 

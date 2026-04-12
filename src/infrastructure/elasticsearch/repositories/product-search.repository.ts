@@ -44,7 +44,8 @@ export class ProductSearchRepository implements IProductSearchRepository {
         index: PRODUCTS_INDEX,
         id: productId,
         script: {
-          source: 'ctx._source.buy_count = (ctx._source.buy_count != null ? ctx._source.buy_count : 0) + params.count',
+          source:
+            'ctx._source.buy_count = (ctx._source.buy_count != null ? ctx._source.buy_count : 0) + params.count',
           params: { count: quantity },
         },
       })
@@ -61,7 +62,8 @@ export class ProductSearchRepository implements IProductSearchRepository {
         index: PRODUCTS_INDEX,
         id: productId,
         script: {
-          source: 'ctx._source.buy_count = Math.max(0, (ctx._source.buy_count != null ? ctx._source.buy_count : 0) - params.count)',
+          source:
+            'ctx._source.buy_count = Math.max(0, (ctx._source.buy_count != null ? ctx._source.buy_count : 0) - params.count)',
           params: { count: quantity },
         },
       })
@@ -89,7 +91,7 @@ export class ProductSearchRepository implements IProductSearchRepository {
     if (products.length === 0) return
 
     try {
-      const operations = products.flatMap((product) => [
+      const operations = products.flatMap(product => [
         { index: { _index: PRODUCTS_INDEX, _id: product.id } },
         product,
       ])
@@ -97,7 +99,7 @@ export class ProductSearchRepository implements IProductSearchRepository {
       const result = await this.esService.bulk({ operations })
 
       if (result.errors) {
-        const errorItems = result.items.filter((item) => item.index?.error)
+        const errorItems = result.items.filter(item => item.index?.error)
         this.logger.error(`Bulk index errors:`, errorItems)
       }
 

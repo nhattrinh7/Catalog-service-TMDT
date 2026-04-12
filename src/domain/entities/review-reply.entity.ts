@@ -9,17 +9,7 @@ export class ReviewReply {
     public readonly createdAt: Date,
   ) {}
 
-  static create(props: {
-    reviewId: string
-    shopId: string
-    content: string
-  }): ReviewReply {
-    return new ReviewReply(
-      uuidv4(),
-      props.reviewId,
-      props.shopId,
-      props.content,
-      new Date(),
-    )
+  static create(props: { reviewId: string; shopId: string; content: string }): ReviewReply {
+    return new ReviewReply(uuidv4(), props.reviewId, props.shopId, props.content, new Date())
   }
 }

@@ -1,6 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { DeleteBrandCommand } from '~/application/commands/delete-brand/delete-brand.command'
-import { BRAND_REPOSITORY, type IBrandRepository } from '~/domain/repositories/brand.repository.interface'
+import {
+  BRAND_REPOSITORY,
+  type IBrandRepository,
+} from '~/domain/repositories/brand.repository.interface'
 import { Inject } from '@nestjs/common'
 
 @CommandHandler(DeleteBrandCommand)

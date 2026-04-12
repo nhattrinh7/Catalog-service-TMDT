@@ -11,7 +11,14 @@ import { ReviewReplyController } from '~/presentation/v1/controllers/review-repl
 
 @Module({
   imports: [CqrsModule, ApplicationModule, MessagingModule],
-  controllers: [CategoryController, BrandController, ProductController, ProductReviewController, ReportReviewController, ReviewReplyController],
+  controllers: [
+    CategoryController,
+    BrandController,
+    ProductController,
+    ProductReviewController,
+    ReportReviewController,
+    ReviewReplyController,
+  ],
   exports: [],
 })
 export class PresentationModule {}

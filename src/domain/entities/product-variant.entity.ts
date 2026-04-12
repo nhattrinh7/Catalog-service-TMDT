@@ -27,15 +27,11 @@ export class ProductVariant extends AggregateRoot {
       new Date(),
       false,
     )
-    
+
     return productVariant
   }
 
-  update(props: {
-    sku: string
-    price: number
-    image: string
-  }): void {
+  update(props: { sku: string; price: number; image: string }): void {
     this.sku = props.sku
     this.price = props.price
     this.image = props.image

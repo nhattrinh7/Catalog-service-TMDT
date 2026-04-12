@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { ElasticsearchModule as NestElasticsearchModule  } from '@nestjs/elasticsearch'
+import { ElasticsearchModule as NestElasticsearchModule } from '@nestjs/elasticsearch'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ElasticsearchService } from '~/infrastructure/elasticsearch/elasticsearch.service'
 import { ProductSearchRepository } from '~/infrastructure/elasticsearch/repositories/product-search.repository'
@@ -22,9 +22,6 @@ import { PRODUCT_SEARCH_REPOSITORY } from '~/domain/repositories/product-search.
       useClass: ProductSearchRepository,
     },
   ],
-  exports: [
-    PRODUCT_SEARCH_REPOSITORY,
-    NestElasticsearchModule,
-  ],
+  exports: [PRODUCT_SEARCH_REPOSITORY, NestElasticsearchModule],
 })
 export class ElasticsearchModule {}

@@ -10,9 +10,7 @@ interface GetReviewedOrderItemsPayload {
 
 @Controller()
 export class GetReviewedOrderItemsConsumer extends BaseRetryConsumer {
-  constructor(
-    private readonly queryBus: QueryBus,
-  ) {
+  constructor(private readonly queryBus: QueryBus) {
     super()
   }
 

@@ -12,12 +12,12 @@ export class ProductSearchMapper {
     isInStock: boolean,
   ): ProductSearchDocument {
     // Tính giá thấp nhất và cao nhất từ các variants
-    const prices = variants.map((v) => v.price)
+    const prices = variants.map(v => v.price)
     const minPrice = prices.length > 0 ? Math.min(...prices) : 0
     const maxPrice = prices.length > 0 ? Math.max(...prices) : 0
 
     // Gộp tất cả SKU của variants thành chuỗi để search
-    const skuText = variants.map((v) => v.sku).join(' ')
+    const skuText = variants.map(v => v.sku).join(' ')
 
     return {
       id: product.id,

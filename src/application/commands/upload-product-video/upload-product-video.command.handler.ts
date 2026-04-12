@@ -3,10 +3,10 @@ import { UploadProductVideoCommand } from '~/application/commands/upload-product
 import { CloudinaryService } from '~/common/services/cloudinary.service'
 
 @CommandHandler(UploadProductVideoCommand)
-export class UploadProductVideoHandler implements ICommandHandler<UploadProductVideoCommand, string> {
-  constructor(
-    private readonly cloudinaryService: CloudinaryService,
-  ) {}
+export class UploadProductVideoHandler
+  implements ICommandHandler<UploadProductVideoCommand, string>
+{
+  constructor(private readonly cloudinaryService: CloudinaryService) {}
 
   async execute(command: UploadProductVideoCommand) {
     const { file } = command
@@ -17,4 +17,3 @@ export class UploadProductVideoHandler implements ICommandHandler<UploadProductV
     return uploadResult.secure_url
   }
 }
-  

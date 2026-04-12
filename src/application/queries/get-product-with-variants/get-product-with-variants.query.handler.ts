@@ -1,13 +1,25 @@
 import { QueryHandler, IQueryHandler } from '@nestjs/cqrs'
-import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
+import {
+  PRODUCT_REPOSITORY,
+  type IProductRepository,
+} from '~/domain/repositories/product.repository.interface'
 import { Inject } from '@nestjs/common'
 import { GetProductWithVariantsQuery } from '~/application/queries/get-product-with-variants/get-product-with-variants.query'
 import { IProductWithVariantsAndClassifications } from '~/domain/interfaces/product.interface'
-import { MESSAGE_PUBLISHER, type IMessagePublisher } from '~/domain/contracts/message-publisher.interface'
-import { PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY, type IProductVariantOptionValueRepository } from '~/domain/repositories/product-variant-option-value.repository.interface'
+import {
+  MESSAGE_PUBLISHER,
+  type IMessagePublisher,
+} from '~/domain/contracts/message-publisher.interface'
+import {
+  PRODUCT_VARIANT_OPTION_VALUE_REPOSITORY,
+  type IProductVariantOptionValueRepository,
+} from '~/domain/repositories/product-variant-option-value.repository.interface'
 
 @QueryHandler(GetProductWithVariantsQuery)
-export class GetProductWithVariantsHandler implements IQueryHandler<GetProductWithVariantsQuery, IProductWithVariantsAndClassifications | null> {
+export class GetProductWithVariantsHandler
+  implements
+    IQueryHandler<GetProductWithVariantsQuery, IProductWithVariantsAndClassifications | null>
+{
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: IProductRepository,
@@ -21,16 +33,21 @@ export class GetProductWithVariantsHandler implements IQueryHandler<GetProductWi
     const { id } = query
 
     const product = await this.productRepository.findByIdWithVariants(id)
-    
+
     if (!product) return null
 
     // Gọi inventory service để lấy stock và soldQuantity
     // productIds chỉ chứa 1 id
     const productIds = [product.id]
-    
+
     const stocksResponse = await this.messagePublisher.sendToInventoryService<
       { productIds: string[] },
-      { stocks: Array<{ productId: string; variants: Array<{ productVariantId: string; stock: number; soldQuantity: number }> }> }
+      {
+        stocks: Array<{
+          productId: string
+          variants: Array<{ productVariantId: string; stock: number; soldQuantity: number }>
+        }>
+      }
     >('get.stocks', { productIds })
 
     // Tạo map để lookup stock và soldQuantity theo productVariantId nhanh hơn
@@ -56,9 +73,10 @@ export class GetProductWithVariantsHandler implements IQueryHandler<GetProductWi
 
     // Lấy thông tin classifications từ ProductVariantOptionValue
     const variantIds = product.variants.map(v => v.id)
-    const pvovData = variantIds.length > 0 
-      ? await this.productVariantOptionValueRepository.findByVariantIds(variantIds)
-      : []
+    const pvovData =
+      variantIds.length > 0
+        ? await this.productVariantOptionValueRepository.findByVariantIds(variantIds)
+        : []
 
     // Group theo option name để tạo classifications
     const classificationsMap = new Map<string, Set<string>>()

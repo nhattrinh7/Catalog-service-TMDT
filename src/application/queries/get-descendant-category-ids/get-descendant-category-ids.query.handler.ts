@@ -5,7 +5,9 @@ import type { ICategoryRepository } from '~/domain/repositories/category.reposit
 import { CATEGORY_REPOSITORY } from '~/domain/repositories/category.repository.interface'
 
 @QueryHandler(GetDescendantCategoryIdsQuery)
-export class GetDescendantCategoryIdsHandler implements IQueryHandler<GetDescendantCategoryIdsQuery, string[]> {
+export class GetDescendantCategoryIdsHandler
+  implements IQueryHandler<GetDescendantCategoryIdsQuery, string[]>
+{
   constructor(
     @Inject(CATEGORY_REPOSITORY)
     private readonly categoryRepository: ICategoryRepository,

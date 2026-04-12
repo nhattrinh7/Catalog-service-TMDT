@@ -8,20 +8,16 @@ import { Observable } from 'rxjs'
 import { tap } from 'rxjs/operators'
 import type { Cache } from 'cache-manager'
 
-
 // ***
-// CustomCacheInterceptor đang extends CacheInterceptor của @nestjs/cache-manager. 
-// Và cái interceptor gốc của NestJS nó có một tính năng bảo mật mặc định (ngầm định) cực kỳ gây ức chế 
-// nếu không đọc kỹ Docs: "Nếu nó thấy request gửi lên có chứa header authorization, 
-// nó sẽ TỪ CHỐI cache (bỏ qua luôn)". Nó sợ là dữ liệu mật của người này sẽ bị dính vào cache 
+// CustomCacheInterceptor đang extends CacheInterceptor của @nestjs/cache-manager.
+// Và cái interceptor gốc của NestJS nó có một tính năng bảo mật mặc định (ngầm định) cực kỳ gây ức chế
+// nếu không đọc kỹ Docs: "Nếu nó thấy request gửi lên có chứa header authorization,
+// nó sẽ TỪ CHỐI cache (bỏ qua luôn)". Nó sợ là dữ liệu mật của người này sẽ bị dính vào cache
 // rồi người khác đọc được.
 // ***
 @Injectable()
 export class CustomCacheInterceptor extends CacheInterceptor {
-  constructor(
-    @Inject(CACHE_MANAGER) cacheManager: Cache,
-    reflector: Reflector
-  ) {
+  constructor(@Inject(CACHE_MANAGER) cacheManager: Cache, reflector: Reflector) {
     super(cacheManager, reflector)
   }
 
@@ -31,9 +27,13 @@ export class CustomCacheInterceptor extends CacheInterceptor {
       const observable = await super.intercept(context, next)
       return observable.pipe(
         tap({
-          next: () => console.log('--- CustomCacheInterceptor: Data received from handler, key: ', this.trackBy(context)),
-          error: (err) => console.error('--- CustomCacheInterceptor: Handler Error ---', err)
-        })
+          next: () =>
+            console.log(
+              '--- CustomCacheInterceptor: Data received from handler, key: ',
+              this.trackBy(context),
+            ),
+          error: err => console.error('--- CustomCacheInterceptor: Handler Error ---', err),
+        }),
       )
     } catch (err) {
       console.error('--- CustomCacheInterceptor: Error in super.intercept ---', err)
@@ -71,13 +71,12 @@ export class CustomCacheInterceptor extends CacheInterceptor {
         const userId = request.params.id || request.headers['x-user-id']
         return `cache:personal:${cacheResource}:${userId}`
       }
-
     }
   }
-  
+
   // Mặc định CacheInterceptor của NestJS sẽ KHÔNG cache nếu request có header 'authorization'
   // (để tránh rò rỉ dữ liệu nhạy cảm của user này sang user khác).
-  // Nhưng ở đây các thông tin sản phẩm/voucher là công khai, và do qua Kong/Auth-service 
+  // Nhưng ở đây các thông tin sản phẩm/voucher là công khai, và do qua Kong/Auth-service
   // nên lúc nào cũng có token, vì vậy ta phải override lại để cho phép cache.
   protected isRequestCacheable(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest()

@@ -1,5 +1,3 @@
 export class GetVariantsBatchQuery {
-  constructor(
-    public readonly productVariantIds: string[]
-  ) {}
+  constructor(public readonly productVariantIds: string[]) {}
 }

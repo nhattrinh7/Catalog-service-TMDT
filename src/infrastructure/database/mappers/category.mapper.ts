@@ -17,7 +17,7 @@ export class CategoryMapper {
   static toPersistence(category: Category): PrismaBrand {
     return {
       id: category.id,
-      name: category.name,       
+      name: category.name,
       description: category.description,
       parentId: category.parentId,
       attributes: category.attributes,

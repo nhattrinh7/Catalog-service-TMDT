@@ -1,5 +1,5 @@
-import { Product } from "~/domain/entities/product.entity"
-import { ProductVariant } from "~/domain/entities/product-variant.entity"
+import { Product } from '~/domain/entities/product.entity'
+import { ProductVariant } from '~/domain/entities/product-variant.entity'
 
 export interface IProductWithVariants extends Product {
   variants: ProductVariant[]

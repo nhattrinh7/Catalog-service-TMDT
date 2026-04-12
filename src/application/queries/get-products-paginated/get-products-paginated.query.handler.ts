@@ -1,9 +1,18 @@
 import { QueryHandler, IQueryHandler } from '@nestjs/cqrs'
-import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
-import { CATEGORY_REPOSITORY, type ICategoryRepository } from '~/domain/repositories/category.repository.interface'
+import {
+  PRODUCT_REPOSITORY,
+  type IProductRepository,
+} from '~/domain/repositories/product.repository.interface'
+import {
+  CATEGORY_REPOSITORY,
+  type ICategoryRepository,
+} from '~/domain/repositories/category.repository.interface'
 import { Inject } from '@nestjs/common'
 import { GetProductsPaginatedQuery } from '~/application/queries/get-products-paginated/get-products-paginated.query'
-import { MESSAGE_PUBLISHER, type IMessagePublisher } from '~/domain/contracts/message-publisher.interface'
+import {
+  MESSAGE_PUBLISHER,
+  type IMessagePublisher,
+} from '~/domain/contracts/message-publisher.interface'
 
 interface ShopInfo {
   id: string
@@ -22,7 +31,9 @@ interface GetProductsPaginatedResponse {
 }
 
 @QueryHandler(GetProductsPaginatedQuery)
-export class GetProductsPaginatedHandler implements IQueryHandler<GetProductsPaginatedQuery, GetProductsPaginatedResponse> {
+export class GetProductsPaginatedHandler
+  implements IQueryHandler<GetProductsPaginatedQuery, GetProductsPaginatedResponse>
+{
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: IProductRepository,
@@ -38,14 +49,14 @@ export class GetProductsPaginatedHandler implements IQueryHandler<GetProductsPag
     // 1. Gọi user-service lấy leaf categoryIds theo roleId
     const categoryIds = await this.messagePublisher.sendToUserService<string, string[]>(
       'get.leaf_categoryIds',
-      roleId
+      roleId,
     )
 
     // Nếu không có category nào thì trả về empty
     if (!categoryIds || categoryIds.length === 0) {
       return {
         products: [],
-        meta: { total: 0, page, limit, totalPages: 0 }
+        meta: { total: 0, page, limit, totalPages: 0 },
       }
     }
 
@@ -68,11 +79,11 @@ export class GetProductsPaginatedHandler implements IQueryHandler<GetProductsPag
 
     // 3. Lấy danh sách shopIds từ products (unique)
     const shopIds = [...new Set(products.map(p => p.shopId))]
-    
+
     // Gọi shop-service để lấy thông tin shop
     const shops = await this.messagePublisher.sendToShopService<{ shopIds: string[] }, ShopInfo[]>(
       'get.shop',
-      { shopIds }
+      { shopIds },
     )
 
     // Tạo map để lookup shop nhanh
@@ -80,15 +91,15 @@ export class GetProductsPaginatedHandler implements IQueryHandler<GetProductsPag
 
     // 4. Lấy danh sách categoryIds từ products (unique)
     const productCategoryIds = [...new Set(products.map(p => p.categoryId))]
-    
+
     // Lấy thông tin category
     const categories = await Promise.all(
-      productCategoryIds.map(id => this.categoryRepository.getCategory(id))
+      productCategoryIds.map(id => this.categoryRepository.getCategory(id)),
     )
-    
+
     // Tạo map để lookup category nhanh
     const categoryMap = new Map(
-      categories.filter(c => c !== null).map(c => [c.id, { id: c.id, name: c.name }])
+      categories.filter(c => c !== null).map(c => [c.id, { id: c.id, name: c.name }]),
     )
 
     // 5. Ghép thông tin shop và category vào từng sản phẩm

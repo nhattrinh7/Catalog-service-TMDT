@@ -50,8 +50,8 @@ export const CreateProductBodySchema = CreateProductSchema.extend({
       sku: z.string().max(100),
       stock: z.number().min(0),
       optionValues: z.array(z.string().max(30)).optional(),
-    })
-  )
+    }),
+  ),
 })
 export class CreateProductBodyDto extends createZodDto(CreateProductBodySchema) {}
 
@@ -69,14 +69,14 @@ export const UpdateProductBodySchema = UpdateProductSchema.extend({
   classifications: z.array(ClassificationSchema).optional(),
   variants: z.array(
     z.object({
-      id: z.uuid().optional(),  // Optional - variant mới không có id
+      id: z.uuid().optional(), // Optional - variant mới không có id
       image: z.url(),
       price: z.number().min(0),
       sku: z.string().max(100),
       stock: z.number().min(0),
-      optionValues: z.array(z.string().max(30)).optional(),  // Thêm optionValues
-    })
-  )
+      optionValues: z.array(z.string().max(30)).optional(), // Thêm optionValues
+    }),
+  ),
 })
 export class UpdateProductBodyDto extends createZodDto(UpdateProductBodySchema) {}
 
@@ -84,34 +84,32 @@ export const GetProductsPaginatedQuerySchema = z.object({
   page: z
     .string()
     .optional()
-    .transform((val) => (val ? parseInt(val, 10) : 1)) // chuyển kiểu dữ liệu sang int, nếu không có giá trị thì mặc định là 1
+    .transform(val => (val ? parseInt(val, 10) : 1)) // chuyển kiểu dữ liệu sang int, nếu không có giá trị thì mặc định là 1
     .pipe(z.number().int().positive()), // xác thực lại sau khi chuyển kiểu dữ liệu
-  
+
   limit: z
     .string()
     .optional()
-    .transform((val) => (val ? parseInt(val, 10) : 5))
+    .transform(val => (val ? parseInt(val, 10) : 5))
     .pipe(z.number().int().positive().max(10)),
-  
+
   search: z
     .string()
     .optional()
-    .transform((val) => val || undefined), // "laptop" → "laptop", "" → undefined, undefined → undefined
-    // lí do mà "" → undefined là vì nếu ko muốn search thì đã ko cần truyền search vào url, đã search thì phải có giá trị
-    // đằng này lại truyền search="" để làm quái gì, coi như ko truyền search vào cho rồi
-  
+    .transform(val => val || undefined), // "laptop" → "laptop", "" → undefined, undefined → undefined
+  // lí do mà "" → undefined là vì nếu ko muốn search thì đã ko cần truyền search vào url, đã search thì phải có giá trị
+  // đằng này lại truyền search="" để làm quái gì, coi như ko truyền search vào cho rồi
+
   isActive: z
     .string()
     .optional()
-    .transform((val) => {
+    .transform(val => {
       if (!val) return undefined
       return val === 'true'
     })
     .pipe(z.boolean().optional()),
-  
-  approveStatus: z
-    .enum(ApproveProductStatus)
-    .optional(),
+
+  approveStatus: z.enum(ApproveProductStatus).optional(),
 })
 export class GetProductsPaginatedQueryDto extends createZodDto(GetProductsPaginatedQuerySchema) {}
 
@@ -145,4 +143,6 @@ export const GetProductsPaginatedResponseSchema = z.object({
   items: z.array(ProductWithVariantsSchema),
   meta: PaginationMetaSchema,
 })
-export class GetProductsPaginatedResponseDto extends createZodDto(GetProductsPaginatedResponseSchema) {}
+export class GetProductsPaginatedResponseDto extends createZodDto(
+  GetProductsPaginatedResponseSchema,
+) {}

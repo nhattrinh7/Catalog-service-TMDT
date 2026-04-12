@@ -1,6 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { CreateBrandCommand } from '~/application/commands/create-brand/create-brand.command'
-import { BRAND_REPOSITORY, type IBrandRepository } from '~/domain/repositories/brand.repository.interface'
+import {
+  BRAND_REPOSITORY,
+  type IBrandRepository,
+} from '~/domain/repositories/brand.repository.interface'
 import { Inject } from '@nestjs/common'
 import { Brand } from '~/domain/entities/brand.entity'
 

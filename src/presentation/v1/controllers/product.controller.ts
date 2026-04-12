@@ -32,7 +32,11 @@ import { GetShopProductsPaginatedQuery } from '~/application/queries/get-shop-pr
 import { GetProductsPaginatedQuery } from '~/application/queries/get-products-paginated/get-products-paginated.query'
 
 import { GetProductToSoldQuery } from '~/application/queries/get-product-to-sold/get-product-to-sold.query'
-import { CreateProductBodyDto, GetProductsPaginatedQueryDto, UpdateProductBodyDto } from '~/presentation/dtos/product.dto'
+import {
+  CreateProductBodyDto,
+  GetProductsPaginatedQueryDto,
+  UpdateProductBodyDto,
+} from '~/presentation/dtos/product.dto'
 
 import { CustomCacheInterceptor } from '~/infrastructure/cache/custom-cache.interceptor'
 import { CacheType } from '~/infrastructure/cache/cache-type.decorator'
@@ -85,9 +89,7 @@ export class ProductController {
   }
 
   @Post('/')
-  async createProduct(
-    @Body() body: CreateProductBodyDto,
-  ): Promise<any> {
+  async createProduct(@Body() body: CreateProductBodyDto): Promise<any> {
     await this.commandBus.execute(new CreateProductCommand(body))
 
     return { message: 'Create product successful' }
@@ -98,17 +100,19 @@ export class ProductController {
   async getShopProductsPaginated(
     @Query() query: GetProductsPaginatedQueryDto,
     @Param('shopId') shopId: string,
-  ): Promise<{ message: string, data: any }> {
-    const result = await this.queryBus.execute(new GetShopProductsPaginatedQuery(
-      query.page,
-      query.limit,
-      shopId,
-      query.search,
-      query.isActive,
-      query.approveStatus,
-    ))
+  ): Promise<{ message: string; data: any }> {
+    const result = await this.queryBus.execute(
+      new GetShopProductsPaginatedQuery(
+        query.page,
+        query.limit,
+        shopId,
+        query.search,
+        query.isActive,
+        query.approveStatus,
+      ),
+    )
 
-    return { message: 'Get shop products paginated successful', data: result}
+    return { message: 'Get shop products paginated successful', data: result }
   }
 
   @Get('/:id')
@@ -116,19 +120,14 @@ export class ProductController {
   @CacheType(CACHE_TYPE.DETAIL)
   @CacheResource(CACHE_RESOURCE.PRODUCTS)
   @CacheTTL(300_000) // 5 phút
-  async getProductDetail(
-    @Param('id') id: string,
-  ): Promise<any> {
+  async getProductDetail(@Param('id') id: string): Promise<any> {
     const result = await this.queryBus.execute(new GetProductWithVariantsQuery(id))
 
-    return { message: 'Get product detail successful', data: result}
+    return { message: 'Get product detail successful', data: result }
   }
 
   @Put('/:id')
-  async updateProduct(
-    @Param('id') id: string,
-    @Body() body: UpdateProductBodyDto,
-  ): Promise<any> {
+  async updateProduct(@Param('id') id: string, @Body() body: UpdateProductBodyDto): Promise<any> {
     await this.commandBus.execute(new UpdateProductCommand(id, body))
 
     return { message: 'Update product successful' }
@@ -145,18 +144,14 @@ export class ProductController {
   }
 
   @Patch('/:id/hide')
-  async hideProduct(
-    @Param('id') id: string,
-  ): Promise<any> {
+  async hideProduct(@Param('id') id: string): Promise<any> {
     await this.commandBus.execute(new HideProductCommand(id))
 
     return { message: 'Hide product successful' }
   }
 
   @Patch('/:id/unhide')
-  async unhideProduct(
-    @Param('id') id: string,
-  ): Promise<any> {
+  async unhideProduct(@Param('id') id: string): Promise<any> {
     await this.commandBus.execute(new UnhideProductCommand(id))
 
     return { message: 'Unhide product successful' }
@@ -167,18 +162,20 @@ export class ProductController {
   async getProductsPaginated(
     @Query() query: GetProductsPaginatedQueryDto,
     @Headers('x-user-role') roleId: string, // roleId của admin
-  ): Promise<{ message: string, data: any }> {
-    const result = await this.queryBus.execute(new GetProductsPaginatedQuery(
-      query.page,
-      query.limit,
-      query.search,
-      query.approveStatus,
-      roleId
-    ))
+  ): Promise<{ message: string; data: any }> {
+    const result = await this.queryBus.execute(
+      new GetProductsPaginatedQuery(
+        query.page,
+        query.limit,
+        query.search,
+        query.approveStatus,
+        roleId,
+      ),
+    )
 
-    return { message: 'Get products paginated successful', data: result}
+    return { message: 'Get products paginated successful', data: result }
   }
-  
+
   // Phần sản phẩm trong trang quản lý sản phẩm của admin chỉ có 2 api này thôi
   @Patch('/:id/approve')
   async approveProduct(
@@ -203,16 +200,11 @@ export class ProductController {
     return { message: 'Reject product successful' }
   }
 
-
-  
   // ----------------------------
   @Get('/:id/to-sold')
-  async getProductToSold(
-    @Param('id') id: string,
-  ): Promise<{ message: string, data: any }> {
+  async getProductToSold(@Param('id') id: string): Promise<{ message: string; data: any }> {
     const result = await this.queryBus.execute(new GetProductToSoldQuery(id))
 
-    return { message: 'Get product to sold successful', data: result}
+    return { message: 'Get product to sold successful', data: result }
   }
-
 }

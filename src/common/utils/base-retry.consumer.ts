@@ -19,7 +19,9 @@ export abstract class BaseRetryConsumer {
 
     return requestContext.run({ kongRequestId }, async () => {
       if (retryCount > this.maxRetries) {
-        this.logger.error(`[kongRequestId=${kongRequestId}] Max retries (${this.maxRetries}) exceeded, sending to DLQ`)
+        this.logger.error(
+          `[kongRequestId=${kongRequestId}] Max retries (${this.maxRetries}) exceeded, sending to DLQ`,
+        )
         const serviceName = process.env.SERVICE_NAME || 'unknown-service'
         channel.publish('events_exchange', `dlq.${serviceName}`, originalMsg.content, {
           persistent: true,
@@ -33,7 +35,7 @@ export abstract class BaseRetryConsumer {
           },
         })
         channel.ack(originalMsg) // báo cho RabbitMQ xóa cái message khỏi hàng đợi chính đi (vì ta có 1 bản sao ở DLQ rồi)
-        return undefined // thoát khỏi luồng chạy 
+        return undefined // thoát khỏi luồng chạy
       }
 
       try {
@@ -48,7 +50,9 @@ export abstract class BaseRetryConsumer {
         const jitterDelay = Math.floor(minDelay + Math.random() * (maxDelay - minDelay))
         const originalRoutingKey =
           originalMsg.properties.headers?.['x-original-routing-key'] || context.getPattern()
-        this.logger.warn(`[kongRequestId=${kongRequestId}] Retry ${retryCount + 1}/${this.maxRetries} after ${jitterDelay}ms — routing: ${originalRoutingKey}`)
+        this.logger.warn(
+          `[kongRequestId=${kongRequestId}] Retry ${retryCount + 1}/${this.maxRetries} after ${jitterDelay}ms — routing: ${originalRoutingKey}`,
+        )
         setTimeout(() => {
           channel.publish('events_exchange', originalRoutingKey, originalMsg.content, {
             persistent: true,
@@ -61,8 +65,8 @@ export abstract class BaseRetryConsumer {
           })
         }, jitterDelay)
         channel.ack(originalMsg) // xóa cái message vừa xử lí lỗi khỏi hàng đợi chính đi, nếu không
-                                 // tí mình push lại 1 message lại để retry thì bị thành 2 message nằm trong hàng đợi chính
-        return undefined // thoát khỏi luồng chạy 
+        // tí mình push lại 1 message lại để retry thì bị thành 2 message nằm trong hàng đợi chính
+        return undefined // thoát khỏi luồng chạy
       }
     })
   }
@@ -70,6 +74,6 @@ export abstract class BaseRetryConsumer {
 
 /**
  * Việc gọi ack hay nack là nói cho RabbitMQ biết, chứ thằng service gọi nó fire-and-forget rồi, nó bắn event xong éo quan tâm nữa.
- * Và quan trọng là nếu dùng nack thì việc bắn lại message vào queue chính hay bắn vào DLQ là RabbitMQ làm tự động mình ko thêm các 
+ * Và quan trọng là nếu dùng nack thì việc bắn lại message vào queue chính hay bắn vào DLQ là RabbitMQ làm tự động mình ko thêm các
  * custom headers được.
  */

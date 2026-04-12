@@ -1,7 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { Inject, NotFoundException } from '@nestjs/common'
 import { HideProductReviewCommand } from '~/application/commands/hide-product-review/hide-product-review.command'
-import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
+import {
+  PRODUCT_REPOSITORY,
+  type IProductRepository,
+} from '~/domain/repositories/product.repository.interface'
 
 @CommandHandler(HideProductReviewCommand)
 export class HideProductReviewHandler implements ICommandHandler<HideProductReviewCommand, void> {

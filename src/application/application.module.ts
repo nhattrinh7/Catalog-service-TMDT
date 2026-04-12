@@ -87,24 +87,11 @@ const QueryHandlers = [
   GetReportedReviewsPaginatedHandler,
 ]
 
-const EventHandlers = [
-  ProductCreatedEventHandler,
-  ProductUpdatedEventHandler,
-]
- 
+const EventHandlers = [ProductCreatedEventHandler, ProductUpdatedEventHandler]
+
 @Module({
-  imports: [
-    CqrsModule,
-    DatabaseModule,
-    MessagingModule,
-    ElasticsearchModule,
-  ],
-  providers: [
-    ...CommandHandlers,
-    ...QueryHandlers,
-    ...EventHandlers,
-    CloudinaryService
-  ],
+  imports: [CqrsModule, DatabaseModule, MessagingModule, ElasticsearchModule],
+  providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers, CloudinaryService],
   exports: [],
 })
 export class ApplicationModule {}

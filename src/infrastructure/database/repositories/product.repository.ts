@@ -1,6 +1,10 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
-import { IProductRepository, ProductWithLevel1Category, type ReportedReviewItem } from '~/domain/repositories/product.repository.interface'
+import {
+  IProductRepository,
+  ProductWithLevel1Category,
+  type ReportedReviewItem,
+} from '~/domain/repositories/product.repository.interface'
 import { ReviewReportReason } from '~/domain/enums/review-report.enum'
 import { Product } from '~/domain/entities/product.entity'
 import { ProductReview } from '~/domain/entities/product-review.entity'
@@ -76,9 +80,7 @@ export class ProductRepository implements IProductRepository {
 
     conditions.push(`is_deleted = false`)
 
-    const whereClause = conditions.length > 0 
-      ? 'WHERE ' + conditions.join(' AND ') 
-      : ''
+    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : ''
 
     const productsRaw = await this.prisma.$queryRawUnsafe<any[]>(
       `
@@ -91,47 +93,52 @@ export class ProductRepository implements IProductRepository {
       `,
       ...queryParams,
       limit,
-      offset
+      offset,
     )
 
     const totalRaw = await this.prisma.$queryRawUnsafe<any[]>(
       `SELECT COUNT(*) as count FROM products p ${whereClause}`,
-      ...queryParams
+      ...queryParams,
     )
     const total = Number(totalRaw[0]?.count || 0)
 
     const productIds = productsRaw.map(p => p.id)
-    const variants = productIds.length > 0
-      ? await this.prisma.productVariant.findMany({
-          where: { productId: { in: productIds } },
-        })
-      : []
+    const variants =
+      productIds.length > 0
+        ? await this.prisma.productVariant.findMany({
+            where: { productId: { in: productIds } },
+          })
+        : []
 
     // Map variants theo productId
-    const variantsByProductId = variants.reduce((acc, variant) => {
-      if (!acc[variant.productId]) acc[variant.productId] = []
-      acc[variant.productId].push(variant)
-      return acc
-    }, {} as Record<string, any[]>)
+    const variantsByProductId = variants.reduce(
+      (acc, variant) => {
+        if (!acc[variant.productId]) acc[variant.productId] = []
+        acc[variant.productId].push(variant)
+        return acc
+      },
+      {} as Record<string, any[]>,
+    )
 
     // Map Prisma raw results sang Domain entities
-    const items = productsRaw.map((prismaProduct) => {
+    const items = productsRaw.map(prismaProduct => {
       // Convert snake_case fields to camelCase
       const camelCaseProduct = snakeToCamelObject(prismaProduct)
-      
+
       const product = ProductMapper.toDomain(camelCaseProduct)
-      
+
       const productVariants = variantsByProductId[prismaProduct.id] || []
-      ;(product as any).variants = productVariants.map((variant) => 
-        new ProductVariant(
-          variant.id,
-          variant.productId,
-          variant.sku,
-          variant.price,
-          variant.image,
-          variant.createdAt,
-          variant.updatedAt,
-        )
+      ;(product as any).variants = productVariants.map(
+        variant =>
+          new ProductVariant(
+            variant.id,
+            variant.productId,
+            variant.sku,
+            variant.price,
+            variant.image,
+            variant.createdAt,
+            variant.updatedAt,
+          ),
       )
 
       return product
@@ -191,9 +198,7 @@ export class ProductRepository implements IProductRepository {
 
     conditions.push(`is_deleted = false`)
 
-    const whereClause = conditions.length > 0 
-      ? 'WHERE ' + conditions.join(' AND ') 
-      : ''
+    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : ''
 
     const productsRaw = await this.prisma.$queryRawUnsafe<any[]>(
       `
@@ -206,45 +211,50 @@ export class ProductRepository implements IProductRepository {
       `,
       ...queryParams,
       limit,
-      offset
+      offset,
     )
 
     const totalRaw = await this.prisma.$queryRawUnsafe<any[]>(
       `SELECT COUNT(*) as count FROM products p ${whereClause}`,
-      ...queryParams
+      ...queryParams,
     )
     const total = Number(totalRaw[0]?.count || 0)
 
     const productIds = productsRaw.map(p => p.id)
-    const variants = productIds.length > 0
-      ? await this.prisma.productVariant.findMany({
-          where: { productId: { in: productIds } },
-        })
-      : []
+    const variants =
+      productIds.length > 0
+        ? await this.prisma.productVariant.findMany({
+            where: { productId: { in: productIds } },
+          })
+        : []
 
     // Map variants theo productId
-    const variantsByProductId = variants.reduce((acc, variant) => {
-      if (!acc[variant.productId]) acc[variant.productId] = []
-      acc[variant.productId].push(variant)
-      return acc
-    }, {} as Record<string, any[]>)
+    const variantsByProductId = variants.reduce(
+      (acc, variant) => {
+        if (!acc[variant.productId]) acc[variant.productId] = []
+        acc[variant.productId].push(variant)
+        return acc
+      },
+      {} as Record<string, any[]>,
+    )
 
     // Map Prisma raw results sang Domain entities
-    const items = productsRaw.map((prismaProduct) => {
+    const items = productsRaw.map(prismaProduct => {
       const camelCaseProduct = snakeToCamelObject(prismaProduct)
       const product = ProductMapper.toDomain(camelCaseProduct)
-      
+
       const productVariants = variantsByProductId[prismaProduct.id] || []
-      ;(product as any).variants = productVariants.map((variant) => 
-        new ProductVariant(
-          variant.id,
-          variant.productId,
-          variant.sku,
-          variant.price,
-          variant.image,
-          variant.createdAt,
-          variant.updatedAt,
-        )
+      ;(product as any).variants = productVariants.map(
+        variant =>
+          new ProductVariant(
+            variant.id,
+            variant.productId,
+            variant.sku,
+            variant.price,
+            variant.image,
+            variant.createdAt,
+            variant.updatedAt,
+          ),
       )
 
       return product
@@ -267,22 +277,23 @@ export class ProductRepository implements IProductRepository {
 
     // Map product entity
     const productEntity = ProductMapper.toDomain(product)
-    
+
     // Map variants to domain entities
-    const variantEntities = product.variants.map((variant) => 
-      new ProductVariant(
-        variant.id,
-        variant.productId,
-        variant.sku,
-        variant.price,
-        variant.image,
-        variant.createdAt,
-        variant.updatedAt,
-      )
+    const variantEntities = product.variants.map(
+      variant =>
+        new ProductVariant(
+          variant.id,
+          variant.productId,
+          variant.sku,
+          variant.price,
+          variant.image,
+          variant.createdAt,
+          variant.updatedAt,
+        ),
     )
 
     const category = product.category.name
-    
+
     // Return product with variants
     return {
       ...productEntity,
@@ -292,8 +303,8 @@ export class ProductRepository implements IProductRepository {
   }
 
   async findById(id: string): Promise<Product | null> {
-    const product = await this.prisma.product.findFirst({ 
-      where: { id, isDeleted: false } 
+    const product = await this.prisma.product.findFirst({
+      where: { id, isDeleted: false },
     })
     if (!product) return null
     return ProductMapper.toDomain(product)
@@ -333,10 +344,7 @@ export class ProductRepository implements IProductRepository {
 
     if (hasMedia !== undefined) {
       if (hasMedia) {
-        where.OR = [
-          { images: { not: Prisma.DbNull } },
-          { video: { not: null } },
-        ]
+        where.OR = [{ images: { not: Prisma.DbNull } }, { video: { not: null } }]
       } else {
         where.images = { equals: Prisma.DbNull }
         where.video = { equals: null }
@@ -349,8 +357,7 @@ export class ProductRepository implements IProductRepository {
       where,
       skip: (page - 1) * limit,
       take: limit,
-      orderBy: {
-      },
+      orderBy: {},
     })
 
     const items = ProductReviewMapper.toDomainArray(prismaReviews)
@@ -386,7 +393,8 @@ export class ProductRepository implements IProductRepository {
     }
 
     if (search) {
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(search)
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(search)
 
       where.OR = [
         ...(isUuid ? [{ orderId: { equals: search } }] : []),
@@ -460,7 +468,7 @@ export class ProductRepository implements IProductRepository {
     })
 
     const items: ReportedReviewItem[] = prismaReviews
-      .map((review) => {
+      .map(review => {
         const report = review.reports[0]
         if (!report) return null
 
@@ -494,7 +502,12 @@ export class ProductRepository implements IProductRepository {
     }
   }
 
-  async hideReview(reviewId: string, hiddenReason?: string | null, hiddenAt?: Date | null, tx?: any): Promise<void> {
+  async hideReview(
+    reviewId: string,
+    hiddenReason?: string | null,
+    hiddenAt?: Date | null,
+    tx?: any,
+  ): Promise<void> {
     const client = tx ?? this.prisma
     await client.productReview.update({
       where: { id: reviewId },
@@ -531,7 +544,7 @@ export class ProductRepository implements IProductRepository {
 
     const reviews = await this.prisma.productReview.findMany({
       where: {
-        OR: items.map((item) => ({
+        OR: items.map(item => ({
           orderId: item.orderId,
           productId: item.productId,
         })),
@@ -563,7 +576,9 @@ export class ProductRepository implements IProductRepository {
     })
   }
 
-  async findProductsWithLevel1Categories(productIds: string[]): Promise<ProductWithLevel1Category[]> {
+  async findProductsWithLevel1Categories(
+    productIds: string[],
+  ): Promise<ProductWithLevel1Category[]> {
     const products = await this.prisma.product.findMany({
       where: {
         id: { in: productIds },
@@ -579,7 +594,7 @@ export class ProductRepository implements IProductRepository {
 
     for (const product of products) {
       const level1CategoryId = await this.findLevel1CategoryId(product.categoryId)
-      
+
       results.push({
         productId: product.id,
         categoryId: product.categoryId,
@@ -620,7 +635,12 @@ export class ProductRepository implements IProductRepository {
     return ProductReviewMapper.toDomain(created)
   }
 
-  async updateRating(productId: string, ratingAvg: number, ratingCount: number, tx?: any): Promise<void> {
+  async updateRating(
+    productId: string,
+    ratingAvg: number,
+    ratingCount: number,
+    tx?: any,
+  ): Promise<void> {
     const client = tx ?? this.prisma
 
     await client.product.update({
@@ -632,4 +652,3 @@ export class ProductRepository implements IProductRepository {
     })
   }
 }
-

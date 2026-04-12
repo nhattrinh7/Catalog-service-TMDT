@@ -11,9 +11,7 @@ export class ProductVariantRepository implements IProductVariantRepository {
   async createMany(productVariants: ProductVariant[], tx?: any): Promise<void> {
     const client = tx ?? this.prisma
     await client.productVariant.createMany({
-      data: productVariants.map(variant => 
-        ProductVariantMapper.toPersistence(variant)
-      ),
+      data: productVariants.map(variant => ProductVariantMapper.toPersistence(variant)),
     })
   }
 
@@ -25,14 +23,14 @@ export class ProductVariantRepository implements IProductVariantRepository {
         client.productVariant.update({
           where: { id: variant.id },
           data: ProductVariantMapper.toPersistence(variant),
-        })
-      )
+        }),
+      ),
     )
   }
 
   async findByIds(ids: string[]): Promise<ProductVariant[]> {
     const variants = await this.prisma.productVariant.findMany({
-      where: { 
+      where: {
         id: { in: ids },
         isDeleted: false,
       },
@@ -42,7 +40,7 @@ export class ProductVariantRepository implements IProductVariantRepository {
 
   async findByProductId(productId: string): Promise<ProductVariant[]> {
     const variants = await this.prisma.productVariant.findMany({
-      where: { 
+      where: {
         productId,
         isDeleted: false,
       },
@@ -60,7 +58,7 @@ export class ProductVariantRepository implements IProductVariantRepository {
 
   async findVariantWithProduct(variantId: string): Promise<any> {
     const variant = await this.prisma.productVariant.findUnique({
-      where: { 
+      where: {
         id: variantId,
         isDeleted: false,
       },
@@ -70,9 +68,9 @@ export class ProductVariantRepository implements IProductVariantRepository {
             id: true,
             name: true,
             shopId: true,
-          }
-        }
-      }
+          },
+        },
+      },
     })
     return variant
   }

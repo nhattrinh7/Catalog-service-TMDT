@@ -10,9 +10,7 @@ interface GetProductsWithLevel1CategoriesPayload {
 
 @Controller()
 export class GetProductsWithLevel1CategoriesConsumer extends BaseRetryConsumer {
-  constructor(
-    private readonly queryBus: QueryBus,
-  ) {
+  constructor(private readonly queryBus: QueryBus) {
     super()
   }
 
@@ -22,7 +20,9 @@ export class GetProductsWithLevel1CategoriesConsumer extends BaseRetryConsumer {
     @Ctx() context: RmqContext,
   ) {
     const result = await this.handleWithRetry(context, async () => {
-      this.logger.log(`Event get.products.with.level1.categories received, count=${data.productIds.length}`)
+      this.logger.log(
+        `Event get.products.with.level1.categories received, count=${data.productIds.length}`,
+      )
       return await this.queryBus.execute(new GetProductsWithLevel1CategoriesQuery(data.productIds))
     })
 

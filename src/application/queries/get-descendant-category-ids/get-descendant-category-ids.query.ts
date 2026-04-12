@@ -1,5 +1,3 @@
 export class GetDescendantCategoryIdsQuery {
-  constructor(
-    public readonly categoryIds: string[],
-  ) {}
+  constructor(public readonly categoryIds: string[]) {}
 }

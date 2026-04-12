@@ -32,6 +32,6 @@ export class ReviewReplyRepository implements IReviewReplyRepository {
       where: { reviewId: { in: reviewIds } },
     })
 
-    return replies.map((reply) => ReviewReplyMapper.toDomain(reply))
+    return replies.map(reply => ReviewReplyMapper.toDomain(reply))
   }
 }

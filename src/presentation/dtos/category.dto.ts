@@ -17,7 +17,6 @@ export const CategorySchema = z.object({
 })
 export class CategoryDto extends createZodDto(CategorySchema) {}
 
-
 export const CreateCategoryBodySchema = CategorySchema.pick({
   name: true,
   description: true,

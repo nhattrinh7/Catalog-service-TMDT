@@ -30,5 +30,5 @@ export function snakeToCamelObject<T = any>(obj: any): T {
  * camelToSnakeCase('mainImage') // 'main_image'
  */
 export function camelToSnakeCase(str: string): string {
-  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
 }

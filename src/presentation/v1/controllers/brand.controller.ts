@@ -22,8 +22,11 @@ import { DeleteBrandCommand } from '~/application/commands/delete-brand/delete-b
 import { UpdateBrandCommand } from '~/application/commands/update-brand/update-brand.command'
 import { UploadBrandLogoCommand } from '~/application/commands/upload-brand-logo/upload-brand-logo.command'
 import { GetBrandsPaginatedQuery } from '~/application/queries/get-brands-paginated/get-brands-paginated.query'
-import { CreateBrandBodyDto, GetBrandsPaginatedQueryDto, UpdateBrandBodyDto } from '~/presentation/dtos/brand.dto'
-
+import {
+  CreateBrandBodyDto,
+  GetBrandsPaginatedQueryDto,
+  UpdateBrandBodyDto,
+} from '~/presentation/dtos/brand.dto'
 
 @Controller('v1/brands')
 export class BrandController {
@@ -40,10 +43,7 @@ export class BrandController {
   }
 
   @Put('/:id')
-  async updateBrand(
-    @Param('id') id: string,
-    @Body() body: UpdateBrandBodyDto,
-  ): Promise<any> {
+  async updateBrand(@Param('id') id: string, @Body() body: UpdateBrandBodyDto): Promise<any> {
     await this.commandBus.execute(new UpdateBrandCommand(id, body))
 
     return { message: 'Update brand successful' }
@@ -76,14 +76,10 @@ export class BrandController {
   }
 
   @Get('/')
-  async getBrandsPaginated(
-    @Query() query: GetBrandsPaginatedQueryDto,
-  ): Promise<any> {
-    const result = await this.queryBus.execute(new GetBrandsPaginatedQuery(
-      query.page,
-      query.limit,
-      query.search,
-    ))
+  async getBrandsPaginated(@Query() query: GetBrandsPaginatedQueryDto): Promise<any> {
+    const result = await this.queryBus.execute(
+      new GetBrandsPaginatedQuery(query.page, query.limit, query.search),
+    )
 
     return {
       message: 'Get brands paginated successful',

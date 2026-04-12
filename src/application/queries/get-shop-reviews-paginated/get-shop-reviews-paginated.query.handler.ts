@@ -1,9 +1,15 @@
 import { QueryHandler, IQueryHandler } from '@nestjs/cqrs'
 import { Inject } from '@nestjs/common'
-import { PRODUCT_REPOSITORY, type IProductRepository } from '~/domain/repositories/product.repository.interface'
+import {
+  PRODUCT_REPOSITORY,
+  type IProductRepository,
+} from '~/domain/repositories/product.repository.interface'
 import { GetShopReviewsPaginatedQuery } from './get-shop-reviews-paginated.query'
 import { ProductReview } from '~/domain/entities/product-review.entity'
-import { REVIEW_REPLY_REPOSITORY, type IReviewReplyRepository } from '~/domain/repositories/review-reply.repository.interface'
+import {
+  REVIEW_REPLY_REPOSITORY,
+  type IReviewReplyRepository,
+} from '~/domain/repositories/review-reply.repository.interface'
 
 interface ShopReviewResponse extends Omit<ProductReview, 'userId' | 'images'> {
   images: string[]
@@ -25,8 +31,8 @@ interface GetShopReviewsPaginatedResponse {
 
 @QueryHandler(GetShopReviewsPaginatedQuery)
 export class GetShopReviewsPaginatedHandler
-  implements IQueryHandler<GetShopReviewsPaginatedQuery, GetShopReviewsPaginatedResponse> {
-
+  implements IQueryHandler<GetShopReviewsPaginatedQuery, GetShopReviewsPaginatedResponse>
+{
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: IProductRepository,
@@ -47,12 +53,12 @@ export class GetShopReviewsPaginatedHandler
       endDate,
     })
 
-    const reviewIds = reviews.map((review) => review.id)
+    const reviewIds = reviews.map(review => review.id)
 
     const replies = await this.reviewReplyRepository.findByReviewIds(reviewIds)
-    const replyMap = new Map(replies.map((reply) => [reply.reviewId, reply]))
+    const replyMap = new Map(replies.map(reply => [reply.reviewId, reply]))
 
-    const items: ShopReviewResponse[] = reviews.map((review) => ({
+    const items: ShopReviewResponse[] = reviews.map(review => ({
       id: review.id,
       productId: review.productId,
       shopId: review.shopId,
