@@ -30,29 +30,29 @@ export class RabbitMQPublisher implements IMessagePublisher {
   }
 
   emitToSagaOrchestrator<T>(pattern: string, event: T): void {
-    this.logger.debug(`[${getKongRequestId()}] Emit ${pattern} → saga-orchestrator`)
+    this.logger.log(`[${getKongRequestId()}] Emit ${pattern} → saga-orchestrator`)
     this.sagaClient.emit(pattern, this.buildRecord(event))
   }
 
   emitToInventoryService<T>(pattern: string, event: T): void {
-    this.logger.debug(`[${getKongRequestId()}] Emit ${pattern} → inventory-service`)
+    this.logger.log(`[${getKongRequestId()}] Emit ${pattern} → inventory-service`)
     this.inventoryClient.emit(pattern, this.buildRecord(event))
   }
 
   async sendToInventoryService<T, R = any>(pattern: string, data: T): Promise<R> {
-    this.logger.debug(`[${getKongRequestId()}] Send ${pattern} → inventory-service`)
+    this.logger.log(`[${getKongRequestId()}] Send ${pattern} → inventory-service`)
     const response$ = this.inventoryClient.send<R, T>(pattern, this.buildRecord(data) as any)
     return lastValueFrom(response$)
   }
 
   async sendToUserService<T, R = any>(pattern: string, data: T): Promise<R> {
-    this.logger.debug(`[${getKongRequestId()}] Send ${pattern} → user-service`)
+    this.logger.log(`[${getKongRequestId()}] Send ${pattern} → user-service`)
     const response$ = this.userClient.send<R, T>(pattern, this.buildRecord(data) as any)
     return lastValueFrom(response$)
   }
 
   async sendToShopService<T, R = any>(pattern: string, data: T): Promise<R> {
-    this.logger.debug(`[${getKongRequestId()}] Send ${pattern} → shop-service`)
+    this.logger.log(`[${getKongRequestId()}] Send ${pattern} → shop-service`)
     const response$ = this.shopClient.send<R, T>(pattern, this.buildRecord(data) as any)
     return lastValueFrom(response$)
   }
