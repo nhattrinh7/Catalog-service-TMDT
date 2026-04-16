@@ -10,7 +10,23 @@ export class ElasticsearchService implements OnModuleInit {
   constructor(private readonly esService: NestElasticsearchService) {}
 
   async onModuleInit() {
-    await this.ensureIndices()
+    let retries = 15;
+    while (retries > 0) {
+      try {
+        await this.ensureIndices()
+        this.logger.log('Đã kết nối thành công tới Elasticsearch!')
+        return
+      } catch (error) {
+        retries -= 1
+        this.logger.warn(
+          `Chưa thể kết nối tới Elasticsearch. Thử lại sau 5s... (Còn lại: ${retries} lần)`,
+        )
+        if (retries === 0) {
+          throw error
+        }
+        await new Promise((resolve) => setTimeout(resolve, 5000))
+      }
+    }
   }
 
   private async ensureIndices() {
