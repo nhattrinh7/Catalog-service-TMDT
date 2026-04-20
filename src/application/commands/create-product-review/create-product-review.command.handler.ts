@@ -66,11 +66,5 @@ export class CreateProductReviewHandler
       await this.productRepository.createReview(review, tx)
       await this.productRepository.updateRating(productId, newRatingAvg, newRatingCount, tx)
     })
-
-    if (product.approveStatus === 'ACCEPTED') {
-      await this.productSearchRepository.updateProduct(productId, {
-        ratingAvg: newRatingAvg,
-      })
-    }
   }
 }

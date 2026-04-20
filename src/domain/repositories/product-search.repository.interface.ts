@@ -3,6 +3,7 @@ import { ProductSearchDocument } from '~/domain/interfaces/product.interface'
 export interface IProductSearchRepository {
   indexProduct(product: ProductSearchDocument): Promise<void>
   updateProduct(id: string, product: Partial<ProductSearchDocument>): Promise<void>
+  upsertCatalogInfo(id: string, product: Partial<ProductSearchDocument>, upsertBody?: Record<string, any>): Promise<void>
   incrementBuyCount(productId: string, quantity: number): Promise<void>
   decrementBuyCount(productId: string, quantity: number): Promise<void>
   deleteProduct(id: string): Promise<void>

@@ -57,12 +57,6 @@ export class SoftDeleteProductHandler implements ICommandHandler<SoftDeleteProdu
       }
     })
 
-    // Xóa document trong Elasticsearch CHỈ KHI trạng thái là ACCEPTED (NGOÀI transaction)
-    // Nếu PENDING hoặc REJECTED thì không có trong Elasticsearch nên không cần xóa
-    if (product.approveStatus === 'ACCEPTED') {
-      await this.productSearchRepository.deleteProduct(productId)
-    }
-
     // Invalidate cache product detail
     this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, {
       type: CACHE_TYPE.DETAIL,

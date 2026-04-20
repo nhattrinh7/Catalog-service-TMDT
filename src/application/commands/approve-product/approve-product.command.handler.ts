@@ -76,7 +76,7 @@ export class ApproveProductHandler implements ICommandHandler<ApproveProductComm
       INITIAL_IS_IN_STOCK, // is_in_stock = true cho sản phẩm mới duyệt
     )
     // Index vào Elasticsearch
-    await this.productSearchRepository.indexProduct(productSearchDocument)
+    // [Tech-Debt Cleanup] Elasticsearch Sync moved to Kafka CDC
 
     // Invalidate cache product detail
     this.eventEmitter.emit(CACHE_EVENT.INVALIDATE, {

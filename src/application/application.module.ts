@@ -41,8 +41,7 @@ import { CreateReviewReplyHandler } from './commands/create-review-reply/create-
 import { GetShopReviewsPaginatedHandler } from './queries/get-shop-reviews-paginated/get-shop-reviews-paginated.query.handler'
 import { HideProductReviewHandler } from './commands/hide-product-review/hide-product-review.command.handler'
 import { GetReportedReviewsPaginatedHandler } from './queries/get-reported-reviews-paginated/get-reported-reviews-paginated.query.handler'
-import { IncreaseBuyCountHandler } from './commands/increase-buy-count/increase-buy-count.command.handler'
-import { DecreaseBuyCountHandler } from './commands/decrease-buy-count/decrease-buy-count.command.handler'
+
 
 const CommandHandlers = [
   CreateCategoryHandler,
@@ -64,8 +63,6 @@ const CommandHandlers = [
   CreateReviewReportHandler,
   CreateReviewReplyHandler,
   HideProductReviewHandler,
-  IncreaseBuyCountHandler,
-  DecreaseBuyCountHandler,
 ]
 
 const QueryHandlers = [

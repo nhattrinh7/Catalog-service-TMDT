@@ -49,6 +49,19 @@ async function bootstrap() {
     },
   })
 
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        // Mặc định kết nối nội hạt container nếu không có ENV
+        brokers: [process.env.KAFKA_BROKERS || 'kafka:9092'],
+      },
+      consumer: {
+        groupId: 'catalog-service-consumer',
+      },
+    },
+  })
+
   await app.startAllMicroservices()
 
   await app.listen(env.config.PORT ?? 3005)

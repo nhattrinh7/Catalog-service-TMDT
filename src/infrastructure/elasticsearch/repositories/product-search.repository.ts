@@ -38,6 +38,34 @@ export class ProductSearchRepository implements IProductSearchRepository {
     }
   }
 
+  async upsertCatalogInfo(id: string, doc: Partial<ProductSearchDocument>, upsertBody?: Record<string, any>): Promise<void> {
+    try {
+      if (upsertBody) {
+        // Scripted Upsert: Document mới sẽ dùng upsertBody, document cũ chỉ cập nhật các trường trong doc
+        await this.esService.update({
+          index: PRODUCTS_INDEX,
+          id,
+          script: {
+            source: 'for (entry in params.doc.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }',
+            params: { doc },
+          },
+          upsert: upsertBody,
+        })
+      } else {
+        await this.esService.update({
+          index: PRODUCTS_INDEX,
+          id,
+          doc,
+          doc_as_upsert: true,
+        })
+      }
+      this.logger.debug(`Upserted catalog CDC info for product: ${id}`)
+    } catch (error) {
+      this.logger.error(`Failed to upsert catalog CDC info for product ${id}:`, error)
+      throw error
+    }
+  }
+
   async incrementBuyCount(productId: string, quantity: number): Promise<void> {
     try {
       await this.esService.update({

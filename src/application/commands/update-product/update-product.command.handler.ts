@@ -38,7 +38,6 @@ import {
   MESSAGE_PUBLISHER,
   type IMessagePublisher,
 } from '~/domain/contracts/message-publisher.interface'
-import { ProductSearchMapper } from '~/infrastructure/elasticsearch/mappers/product-search.mapper'
 import { PrismaService } from '~/infrastructure/database/prisma/prisma.service'
 
 @CommandHandler(UpdateProductCommand)
@@ -97,38 +96,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
         return await this.handleVariants(id, body, product.shopId, tx)
       })
 
-    // 5. Đồng bộ với Elasticsearch CHỈ KHI trạng thái là ACCEPTED (NGOÀI transaction)
-    if (product.approveStatus === 'ACCEPTED') {
-      // Lấy lại variants sau khi update (chỉ lấy những variant chưa bị soft delete)
-      const updatedVariants = await this.productVariantRepository.findByProductId(id)
 
-      // Lấy category name và category hierarchy
-      const categoryHierarchy = await this.categoryRepository.getCategoryHierarchy(
-        product.categoryId,
-      )
-      const categoryName = categoryHierarchy.length > 0 ? categoryHierarchy[0] : ''
-
-      // Lấy productVariantIds để gọi inventory-service
-      const productVariantIds = updatedVariants.map(v => v.id)
-
-      // Gọi inventory-service để lấy buy_count và is_in_stock
-      const inventoryData = await this.messagePublisher.sendToInventoryService<
-        { productVariantIds: string[] },
-        { buyCount: number; isInStock: boolean }
-      >('get.buy.count', { productVariantIds })
-
-      const productSearchDocument = ProductSearchMapper.toElasticDocument(
-        product,
-        updatedVariants,
-        categoryName,
-        categoryHierarchy,
-        inventoryData.buyCount,
-        inventoryData.isInStock,
-      )
-
-      await this.productSearchRepository.updateProduct(id, productSearchDocument)
-    }
-    // Nếu trạng thái là PENDING hoặc REJECTED, không cập nhật Elasticsearch
 
     // 9. Chuẩn bị data để emit sang inventory service
     const stockUpdates = variantsToUpdate.map((v: any) => ({
