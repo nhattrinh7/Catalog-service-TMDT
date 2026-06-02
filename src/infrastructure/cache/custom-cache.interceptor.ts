@@ -15,6 +15,7 @@ import type { Cache } from 'cache-manager'
 // nó sẽ TỪ CHỐI cache (bỏ qua luôn)". Nó sợ là dữ liệu mật của người này sẽ bị dính vào cache
 // rồi người khác đọc được.
 // ***
+// Đây chính là bác bảo vệ
 @Injectable()
 export class CustomCacheInterceptor extends CacheInterceptor {
   constructor(@Inject(CACHE_MANAGER) cacheManager: Cache, reflector: Reflector) {
@@ -24,7 +25,10 @@ export class CustomCacheInterceptor extends CacheInterceptor {
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     console.log('--- CustomCacheInterceptor: Intercepting Request ---')
     try {
+      // gọi super mời ông nội intercept trong CacheInterceptor ra làm việc (vì mình extend nên có sẵn ông nội)
+      // ông nội sẽ tự động gọi xuống trackBy của mình để lấy key, sau đó check Redis -> cache hit và cache miss
       const observable = await super.intercept(context, next)
+      // dữ liệu trả về từ ông nội là Observable, dùng ,pipe để đặt camera quay lén
       return observable.pipe(
         tap({
           next: () =>
@@ -37,6 +41,8 @@ export class CustomCacheInterceptor extends CacheInterceptor {
       )
     } catch (err) {
       console.error('--- CustomCacheInterceptor: Error in super.intercept ---', err)
+      // next.handle() nghĩa là: "Thôi Redis chết rồi thì dẹp mịa vụ cache đi, mở của cho req đi thẳng vào controller
+      // lấy data từ Postgres luôn ko khách chửi ầm lên giờ"
       return next.handle()
     }
   }
@@ -48,7 +54,8 @@ export class CustomCacheInterceptor extends CacheInterceptor {
     // Chỉ cache GET requests
     if (request.method !== 'GET') return undefined
 
-    // Dùng reflector để lấy metadata từ decorator
+    // Dùng reflector để đọc lấy metadata từ decorator xem cacheType là gì, cacheResource là gì
+    // 2 dữ liệu này sẽ được dùng để tạo ra key cache phía dưới
     const cacheType = this.reflector.get<CacheTypeValue>(CACHE_TYPE_KEY, context.getHandler())
     const cacheResource = this.reflector.get<string>(CACHE_RESOURCE_KEY, context.getHandler())
 
@@ -73,6 +80,8 @@ export class CustomCacheInterceptor extends CacheInterceptor {
       }
     }
   }
+
+  // Sau khi trackBy trả về 1 key, Nestjs sẽ tự động kiểm tra Redis có cache của key này chưa, có thì hit mà ko thì miss
 
   // Mặc định CacheInterceptor của NestJS sẽ KHÔNG cache nếu request có header 'authorization'
   // (để tránh rò rỉ dữ liệu nhạy cảm của user này sang user khác).
